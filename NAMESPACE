@@ -5,7 +5,5 @@ export(extract_samples_info)
 export(plot_summary_info)
 
 # Imported functions
-importFrom(ggplot2, ggplot, geom_histogram, geom_density, aes, theme_minimal, labs, theme)
-importFrom(RColorBrewer, scale_fill_brewer)
-importFrom(INLA, inla)
-importFrom(INLA, inla.posterior.sample)
+importFrom(ggplot2, ggplot, geom_histogram, geom_density, aes, theme_minimal, labs, theme, scale_fill_brewer)
+importFrom(INLA, inla, inla.posterior.sample)
