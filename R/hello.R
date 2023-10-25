@@ -282,6 +282,7 @@ sample_inla_model <- function(model_Z, n_samp) {
 #' results <- run_bayesian_imp(data, Y ~ V1 + V2, n_samp=1000, return_samples=TRUE)
 #'
 run_bayesian_imp <- function(data, formula, n_samp=5000, return_samples = FALSE, ...) {
+  require(INLA)
 
   # Standardize the data
   standardized_data <- standardize_data(data)
