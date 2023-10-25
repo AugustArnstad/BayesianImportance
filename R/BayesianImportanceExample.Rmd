@@ -65,12 +65,13 @@ data_bayes = data.frame(cbind(data_bayes, eta=eta))
 ```{r}
 set.seed(1234)
 library(BayesianImp)
-model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3)
+library(INLA)
+model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
 ```
 
 ```{r}
 set.seed(1234)
-samples_and_model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3, 5000, return_samples = TRUE)
+samples_and_model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta), 5000, return_samples = TRUE)
 samples = samples_and_model$samples
 model_samps = samples_and_model$model
 ```
