@@ -97,6 +97,11 @@ plots$RDistributionPlot
 plots$GelmanR2DistributionPlot
 ```
 
+```{r, eval=FALSE}
+rmarkdown::render(input = "BayesianImportanceExample.Rmd", output_format = "pdf_document")
+```
+
+
 How do I set up the design matrix for the random effects $Z$?
 $$
 Y = X\beta + Z\gamma
