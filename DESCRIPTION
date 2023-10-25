@@ -3,7 +3,7 @@ Type: Package
 Title: Bayesian Variable Importance
 Version: 0.1.0
 Author: August Arnstad
-Maintainer: August Arnstad <augustarnstad@gmail.com
+Maintainer: August Arnstad <augustarnstad@gmail.com>
 Description: Bayesian variable importance for GLMM's using INLA. Sample and plot functions included, along with a summary function.
              The standard summary function can be used for INLA objects.
 License: NONE
