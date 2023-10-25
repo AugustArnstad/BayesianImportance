@@ -1,11 +1,11 @@
 Package: BayesianImportance
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Bayesian Variable Importance
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: August Arnstad
+Maintainer: August Arnstad <augustarnstad@gmail.com
+Description: Bayesian variable importance for GLMM's using INLA. Sample and plot functions included, along with a summary function.
+             The standard summary function can be used for INLA objects.
+License: NONE
 Encoding: UTF-8
 LazyData: true
