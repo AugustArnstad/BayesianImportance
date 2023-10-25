@@ -1,0 +1,113 @@
+---
+title: "BayesianImportance example"
+author: "August Arnstad"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, input=FALSE, echo=FALSE}
+library(formatR)
+showsol <- FALSE
+library(knitr)
+library(devtools)
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 68), 
+                      tidy = TRUE, 
+                      warning = FALSE, 
+                      error = FALSE, 
+                      message = FALSE, 
+                      echo = TRUE, 
+                      fig.width=7, 
+                      fig.height=5, 
+                      fig.align="center")
+```
+
+## SIMULATE DATA
+```{r}
+library(mnormt)
+library(BayesianImp)
+set.seed(1234)
+
+n <- 100
+nclass_gamma <- 10
+nclass_eta <- 20
+
+mu <- c(1,2)
+sigma <- matrix(c(1, 0.0, 0.0, 1), 2, 2)
+
+#Sample a standardized correlated design matrix
+X <- rmnorm(n, mu, sigma)
+
+#Add random effects
+gamma <- rep(rnorm(nclass_gamma, 0, sqrt(1)), each=n/nclass_gamma)
+eta <- rep(rnorm(nclass_eta, 0, sqrt(1)), each=n/nclass_eta)
+epsilon = rnorm(n, mean=0, sd=1)
+
+#Define some formula
+Y<-  1 + 1*X[, 1] + sqrt(2)*X[, 2] + gamma + eta + epsilon # write epsilon as a random effect
+
+#Collect as a dataframe
+data_bayes = data.frame(cbind(Y, X = X))
+data_bayes = data.frame(cbind(data_bayes, gamma=gamma)) 
+data_bayes = data.frame(cbind(data_bayes, eta=eta))
+```
+
+## USAGE
+```{r}
+set.seed(1234)
+library(BayesianImp)
+model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3)
+```
+
+```{r}
+set.seed(1234)
+samples_and_model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3, 5000, return_samples = TRUE)
+samples = samples_and_model$samples
+model_samps = samples_and_model$model
+```
+
+```{r}
+set.seed(1234)
+summary(model_samps)
+summary_importances(model_samps)
+```
+
+```{r}
+set.seed(1234)
+samples_matrix <- extract_samples_info(samples, model_samps)
+```
+
+```{r}
+set.seed(1234)
+plots <- plot_summary_info(samples_matrix)
+```
+
+```{r}
+set.seed(1234)
+plots$VariableImportancePlot
+plots$RDistributionPlot
+plots$GelmanR2DistributionPlot
+```
+
+How do I set up the design matrix for the random effects $Z$?
+$$
+Y = X\beta + Z\gamma
+$$
+Need help with this!
+
+Am I right now just working with random intercepts? Is that what my gamma values truly represent?
+
+In the run_INLA function I run INLA on the Z matrix(SVD approximation of X). Is it correct to run INLA on Z? Right now I transform right before plotting/giving the summary, keeping the beta coefficients from Z before that, since that is the output of the INLA model.
+
+Struggling to make the priors work if they are not simply the default value. Now its just the basic version. This should probably be fixed as it is very limiting. In general I am a bit unsure if my script is efficient, as I have made it pretty quickly. Need a review of this. 
+
+In addition I need general comments on my package as there might be stuff missing that I am not aware of/could be improved. 
