@@ -346,7 +346,7 @@ run_bayesian_imp <- function(data, formula, n_samp=5000, plot=FALSE, return_samp
 #' @param model_results The results from the INLA model, as obtained from \code{run_bayesian_imp}.
 #' @param ... Additional arguments to customize the plot.
 #'
-#' @return A ggplot object visualizing the posterior distributions.
+#' @return A ggplot object visualizing the posterior distributions/importances. Initialize a variable to hold the plot and call the variable.
 #'
 #' @details
 #' This function uses ggplot2 to visualize the posterior distributions of the fixed effects and random effects
@@ -356,7 +356,8 @@ run_bayesian_imp <- function(data, formula, n_samp=5000, plot=FALSE, return_samp
 #' @examples
 #' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
 #' model_results <- run_bayesian_imp(data, Y ~ V1 + V2)
-#' plot_posteriors(model_results)
+#' plot_model <- plot_posteriors(model_results)
+#' plot_model
 #'
 plot_posteriors <- function(model, importance=FALSE) {
   # Get the marginals

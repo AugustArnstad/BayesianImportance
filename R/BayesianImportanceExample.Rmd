@@ -65,6 +65,8 @@ data_bayes = data.frame(cbind(data_bayes, eta=eta))
 ```{r}
 set.seed(1234)
 model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
+plot_model = plot_posteriors(model, importance=FALSE)
+plot_model
 ```
 
 ```{r}
