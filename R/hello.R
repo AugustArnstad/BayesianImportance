@@ -281,7 +281,7 @@ sample_inla_model <- function(model_Z, n_samp) {
 #' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
 #' results <- run_bayesian_imp(data, Y ~ V1 + V2, n_samp=1000, return_samples=TRUE)
 #'
-run_bayesian_imp <- function(data, formula, n_samp=5000, return_samples = FALSE, ...) {
+run_bayesian_imp <- function(data, formula, n_samp=5000, plot=FALSE, return_samples = FALSE, ...) {
   require(INLA)
 
   # Standardize the data
@@ -338,6 +338,73 @@ run_bayesian_imp <- function(data, formula, n_samp=5000, return_samples = FALSE,
   }
 }
 
+
+#' Plot Posterior Distributions
+#'
+#' A function to visualize the posterior distributions of fixed and random effects from the Bayesian importance analysis.
+#'
+#' @param model_results The results from the INLA model, as obtained from \code{run_bayesian_imp}.
+#' @param ... Additional arguments to customize the plot.
+#'
+#' @return A ggplot object visualizing the posterior distributions.
+#'
+#' @details
+#' This function uses ggplot2 to visualize the posterior distributions of the fixed effects and random effects
+#' obtained from the Bayesian importance analysis. It provides insights into the distribution of each parameter
+#' and assists in understanding their significance.
+#'
+#' @examples
+#' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
+#' model_results <- run_bayesian_imp(data, Y ~ V1 + V2)
+#' plot_posteriors(model_results)
+#'
+plot_posteriors <- function(model) {
+  # Get the marginals
+  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+  fixed_marginals_list <- lapply(model$marginals.fixed, function(x) x)
+
+  # Extract names
+  random_effect_names <- names(model$marginals.hyperpar)
+  fixed_effect_names <- names(model$marginals.fixed)
+
+  # Get posterior means for random effects and fixed effects
+  random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x)$mean)
+  fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)
+
+  # Rename with mean values for the legend
+  random_effect_names <- paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")")
+  fixed_effect_names <- paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")")
+
+  # Create data frames
+  df_list <- lapply(1:length(variance_marginals_list), function(i) {
+    data.frame(
+      x = variance_marginals_list[[i]][, 1],
+      y = variance_marginals_list[[i]][, 2],
+      effect = random_effect_names[i]
+    )
+  })
+
+  df_list_fixed <- lapply(1:length(fixed_marginals_list), function(i) {
+    data.frame(
+      x = fixed_marginals_list[[i]][, 1],
+      y = fixed_marginals_list[[i]][, 2],
+      effect = fixed_effect_names[i]
+    )
+  })
+
+  # Combine data frames
+  df_combined <- do.call(rbind, c(df_list, df_list_fixed))
+
+  # Plot using ggplot
+  plot <- ggplot(df_combined, aes(x = x, y = y, color = effect)) +
+    geom_line() +
+    labs(title = "Combined Plot", x = "X-axis Label", y = "Density") +
+    theme_minimal() +
+    scale_color_manual(values = rainbow(length(df_list) + length(df_list_fixed))) +
+    geom_vline(aes(xintercept = 1/6), linetype = "dashed", color = "black") +
+    geom_vline(aes(xintercept = 2/6), linetype = "dashed", color = "black")
+  return(plot)
+}
 
 #' Summarize Importance of Predictors
 #'
