@@ -207,23 +207,6 @@ run_INLA <- function(formula, data) {
 }
 
 
-#' Sample from INLA Model
-#'
-#' This function draws samples from the posterior distribution of an INLA model.
-#'
-#' @param model_Z The INLA model.
-#' @param n_samp Number of samples to draw.
-#'
-#' @return The drawn samples.
-#'
-sample_inla_model <- function(model_Z, n_samp) {
-  # Sample from the posterior distribution of the INLA model
-  samps_Z <- inla.posterior.sample(model_Z, n = n_samp)
-
-  return(samps_Z)
-}
-
-
 #' Bayesian Importance Analysis
 #'
 #' A wrapper function that handles data standardization, preprocessing, INLA modeling,
@@ -465,7 +448,21 @@ gelman_r2_metrics <- function(model, s = 1000, plot = FALSE) {
 
 
 
-
+#' #' Sample from INLA Model
+#' #'
+#' #' This function draws samples from the posterior distribution of an INLA model.
+#' #'
+#' #' @param model_Z The INLA model.
+#' #' @param n_samp Number of samples to draw.
+#' #'
+#' #' @return The drawn samples.
+#' #'
+#' sample_inla_model <- function(model_Z, n_samp) {
+#'   # Sample from the posterior distribution of the INLA model
+#'   samps_Z <- inla.posterior.sample(model_Z, n = n_samp)
+#'
+#'   return(samps_Z)
+#' }
 #'
 #' #' Summarize Importance of Predictors
 #' #'
