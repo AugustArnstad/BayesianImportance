@@ -240,7 +240,8 @@ run_INLA <- function(formula, data) {
                                          config = TRUE),
                   control.family = list(hyper = list(theta = list(initial = log(0.5),
                                                                   prior = "pc.prec",
-                                                                  param = c(sqrt(2),0.05))))
+                                                                  param = c(sqrt(2),0.05)))),
+                  control.predictor = list(compute = TRUE)
   )
   return(model_Z)
 }
