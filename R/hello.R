@@ -732,6 +732,55 @@ plot_summary_info <- function(samples_matrix) {
 }
 
 
+sample_response_matrix <- function(model, n, s) {
+  # Pre-allocate a matrix to store the results
+  result_matrix <- matrix(0, nrow=n, ncol=s)
+
+  for (i in 1:n) {
+    max_digits <- nchar(n)
+    zero_padding <- max(0, max_digits - nchar(i))
+    predictor_name <- paste0("fitted.Predictor.", paste(rep("0", zero_padding), collapse = ""), i)
+
+    # Now draw s samples at once
+    samples <- inla.rmarginal(s, marginal = model$marginals.fitted.values[[predictor_name]])
+    result_matrix[i, ] <- samples
+  }
+
+  return(result_matrix)
+}
+
+
+gelman_r2_metrics <- function(model, s = 1000, plot = FALSE) {
+
+  # Number of predictors
+  n <- length(model$marginals.fitted.values)
+
+  y_samples <- sample_response_matrix(model, n, s)
+
+  y_var <- apply(y_samples, MARGIN=2, FUN=var)
+
+  epsilon_var = 1/inla.rmarginal(s, marginal = model$marginals.hyperpar$"Precision for the Gaussian observations")
+
+  gelman_r2_cond = y_var/(y_var + epsilon_var)
+
+
+  # Plotting
+  if (plot) {
+    library(ggplot2)
+
+    p <- ggplot() +
+      geom_histogram(aes(x = gelman_r2_cond), bins = 30, fill = "skyblue") +
+      labs(title = "Distribution of Gelman Conditional R²", x = "Gelman R²", y = "Frequency") +
+      theme_minimal()
+
+    return(list(conditional_gelman_r2 = gelman_r2_cond, plot = p))
+  }
+
+  # Return the R² values
+  return(gelman_r2_cond)
+}
+
+
 
 
 
