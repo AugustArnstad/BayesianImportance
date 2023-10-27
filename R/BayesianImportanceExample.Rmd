@@ -67,36 +67,8 @@ set.seed(1234)
 model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
 plot_model = plot_posteriors(model, importance=FALSE)
 plot_model
-```
-
-```{r}
-set.seed(1234)
-samples_and_model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta), 5000, return_samples = TRUE)
-samples = samples_and_model$samples
-model_samps = samples_and_model$model
-```
-
-```{r}
-set.seed(1234)
-summary(model_samps)
-summary_importances(model_samps)
-```
-
-```{r}
-set.seed(1234)
-samples_matrix <- extract_samples_info(samples, model_samps)
-```
-
-```{r}
-set.seed(1234)
-plots <- plot_summary_info(samples_matrix)
-```
-
-```{r}
-set.seed(1234)
-plots$VariableImportancePlot
-plots$RDistributionPlot
-plots$GelmanR2DistributionPlot
+test = gelman_r2_metrics(model, s=1000, plot=TRUE)
+test$plot
 ```
 
 ```{r, eval=FALSE}

@@ -425,8 +425,8 @@ plot_posteriors <- function(model, importance=FALSE) {
     labs(title = plot_title, x = "Values", y = "Density") +
     theme_minimal() +
     scale_color_manual(values = rainbow(length(df_list) + length(df_list_fixed))) +
-    geom_vline(aes(xintercept = 1/6), linetype = "dashed", color = "black") +
-    geom_vline(aes(xintercept = 2/6), linetype = "dashed", color = "black")
+    #geom_vline(aes(xintercept = 1/6), linetype = "dashed", color = "black") +    #This is true importance for beta_1, gamma, eta, epsilon
+    #geom_vline(aes(xintercept = 2/6), linetype = "dashed", color = "black")      #This is true importance for beta_2
   return(invisible(plot))
 }
 
