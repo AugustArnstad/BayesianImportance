@@ -6,6 +6,6 @@ Author: August Arnstad
 Maintainer: August Arnstad <augustarnstad@gmail.com>
 Description: Bayesian variable importance for GLMM's using INLA. Sample and plot functions included, along with a summary function.
              The standard summary function can be used for INLA objects.
-License: NONE
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

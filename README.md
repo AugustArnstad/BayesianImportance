@@ -37,7 +37,7 @@ Further documentation and function references can be found within the package. U
 Contributions to `BayesianImportance` are welcome. Please ensure that you adhere to standard coding practices and include tests for any new features. Open a pull request with details about your changes.
 
 ## License
-Just me
+This project is licensed under the MIT License - see the LICENSE.txt file for details
 
 ## Acknowledgements
 INLA team for their outstanding work on the INLA methodology and R package.

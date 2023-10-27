@@ -15,47 +15,6 @@
 #'
 #' @importFrom stats scale
 
-# Load required packages
-# -----------------------
-#
-# library(tidyverse)
-# library(knitr)
-# library(ggplot2)
-# library(MASS)
-# library(keras)
-# library(caret)
-# library(pls)
-# library(gam)
-# library(gbm)
-# library(randomForest)
-# library(ggfortify)
-# library(leaps)
-# library(pROC)
-# library(GGally)
-# library(ISLR2)
-# library(boot)
-# library(psych)
-# library(regclass)
-# library(ggpubr)
-# library(EfficientMaxEigenpair)
-# library(invgamma)
-# library(gmodels)
-# library(coda)
-# library(bayestestR)
-# library(latex2exp)
-# library(nadiv)
-# library(pedigree)
-# library(INLA)
-# library(MCMCpack)
-# library(MCMCglmm)
-# library(relaimpo)
-# library(mnormt)
-# library(lme4)
-# library(glmm.hp)
-# library(partR2)
-# library(nlme)
-# library(devtools)
-
 # -----------------------
 
 #' Creates an enviroment to store some useful quantities for later use in other functions.
@@ -430,6 +389,17 @@ plot_posteriors <- function(model, importance=FALSE) {
   return(list(posterior_marginals = df_combined, posterior_plot = p))
 }
 
+
+#' Sample Response Matrix from INLA Model
+#'
+#' This function samples a response matrix from the given INLA model.
+#'
+#' @param model An object of class `inla`, typically the result of fitting a model with the `inla` function.
+#' @param n The number of predictors.
+#' @param s The number of samples to draw for each predictor.
+#'
+#' @return A matrix where each row corresponds to a predictor and each column corresponds to a sampled value.
+#' @export
 sample_response_matrix <- function(model, n, s) {
   # Pre-allocate a matrix to store the results
   result_matrix <- matrix(0, nrow=n, ncol=s)
@@ -447,6 +417,17 @@ sample_response_matrix <- function(model, n, s) {
   return(result_matrix)
 }
 
+
+#' Sample Response Matrix from INLA Model
+#'
+#' This function samples a response matrix from the given INLA model.
+#'
+#' @param model An object of class `inla`, typically the result of fitting a model with the `inla` function.
+#' @param n The number of predictors.
+#' @param s The number of samples to draw for each predictor.
+#'
+#' @return A matrix where each row corresponds to a predictor and each column corresponds to a sampled value.
+#' @export
 gelman_r2_metrics <- function(model, s = 1000, plot = FALSE) {
 
   # Number of predictors
