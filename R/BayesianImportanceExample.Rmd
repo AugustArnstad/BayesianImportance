@@ -31,15 +31,25 @@ knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 68),
                       fig.align="center")
 ```
 
+```{r}
+# If not already installed, install the 'devtools' package
+if(!require(devtools)) install.packages("devtools")
+
+# Install BayesianImportance
+devtools::install_github("AugustArnstad/BayesianImportance")
+```
+
+
 ## SIMULATE DATA
 ```{r}
 library(BayesianImp)
+library(INLA)
 library(mnormt)
 set.seed(1234)
 
-n <- 100
-nclass_gamma <- 10
-nclass_eta <- 20
+n <- 1000
+nclass_gamma <- 50
+nclass_eta <- 100
 
 mu <- c(1,2)
 sigma <- matrix(c(1, 0.0, 0.0, 1), 2, 2)
@@ -67,8 +77,17 @@ set.seed(1234)
 model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
 plot_model = plot_posteriors(model, importance=FALSE)
 plot_model
+```
+
+```{r}
+plot_model = plot_posteriors(model, importance=TRUE)
+plot_model
+```
+
+```{r}
 test = gelman_r2_metrics(model, s=1000, plot=TRUE)
 test$plot
+summary(test$conditional_gelman_r2)
 ```
 
 ```{r, eval=FALSE}
