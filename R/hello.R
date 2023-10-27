@@ -424,10 +424,10 @@ plot_posteriors <- function(model, importance=FALSE) {
     geom_line() +
     labs(title = plot_title, x = "Values", y = "Density") +
     theme_minimal() +
-    scale_color_manual(values = rainbow(length(df_list) + length(df_list_fixed))) +
+    scale_color_manual(values = rainbow(length(df_list) + length(df_list_fixed)))
     #geom_vline(aes(xintercept = 1/6), linetype = "dashed", color = "black") +    #This is true importance for beta_1, gamma, eta, epsilon
     #geom_vline(aes(xintercept = 2/6), linetype = "dashed", color = "black")      #This is true importance for beta_2
-  return(list(posterior_marginals = df_combined, plott = p))
+  return(list(posterior_marginals = df_combined, posterior_plot = p))
 }
 
 #' Summarize Importance of Predictors
