@@ -371,11 +371,11 @@ plot_posteriors <- function(model, importance=FALSE) {
   fixed_effect_names <- names(model$marginals.fixed)
 
   # Get posterior means for random effects and fixed effects
-  random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x)$mean)
+  random_means <- 1/sapply(model$marginals.hyperpar, function(x) invisible(inla.zmarginal(x)$mean))
   if (!importance){
-    fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)
+    fixed_means <- sapply(model$marginals.fixed, function(x) invisible(inla.zmarginal(x)$mean))
   }else{
-    fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)^2
+    fixed_means <- sapply(model$marginals.fixed, function(x) invisible(inla.zmarginal(x)$mean))^2
   }
   #fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)
 
