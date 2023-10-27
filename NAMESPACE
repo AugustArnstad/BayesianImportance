@@ -1,11 +1,11 @@
 # Exported functions
 export(run_bayesian_imp)
 export(plot_posteriors)
-export(summary_importances)
-export(extract_samples_info)
-export(plot_summary_info)
+#export(summary_importances)
+#export(extract_samples_info)
+#export(plot_summary_info)
 export(gelman_r2_metrics)
 
 # Imported functions
-importFrom(ggplot2, ggplot, geom_histogram, geom_density, aes, theme_minimal, labs, theme, scale_fill_brewer)
+importFrom(ggplot2, ggplot, geom_histogram, geom_density, geom_line, aes, theme_minimal, labs, theme, scale_fill_brewer)
 importFrom(INLA, inla, inla.posterior.sample)

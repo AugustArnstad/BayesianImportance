@@ -39,12 +39,12 @@ if(!require(devtools)) install.packages("devtools")
 devtools::install_github("AugustArnstad/BayesianImportance")
 ```
 
-
 ## SIMULATE DATA
 ```{r}
-library(BayesianImp)
+library(BayesianImportance)
 library(INLA)
 library(mnormt)
+library(ggplot2)
 set.seed(1234)
 
 n <- 1000
@@ -75,19 +75,22 @@ data_bayes = data.frame(cbind(data_bayes, eta=eta))
 ```{r}
 set.seed(1234)
 model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
+```
+
+```{r}
 plot_model = plot_posteriors(model, importance=FALSE)
-plot_model
+plot_model$posterior_plot
 ```
 
 ```{r}
 plot_model = plot_posteriors(model, importance=TRUE)
-plot_model
+plot_model$posterior_plot
 ```
 
 ```{r}
-test = gelman_r2_metrics(model, s=1000, plot=TRUE)
-test$plot
-summary(test$conditional_gelman_r2)
+gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
+gelman_r2$plot
+summary(gelman_r2$conditional_gelman_r2)
 ```
 
 ```{r, eval=FALSE}
