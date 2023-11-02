@@ -411,7 +411,7 @@ sample_response_matrix <- function(model, n, s) {
 #'
 #' @return A matrix where each row corresponds to a predictor and each column corresponds to a sampled value.
 #' @export
-gelman_r2_metrics <- function(model, s = 1000, plot = FALSE) {
+gelman_r2_metrics <- function(model, s = 1000, plot = FALSE, modelname="model") {
 
   # Number of predictors
   n <- length(model$marginals.fitted.values)
@@ -431,7 +431,7 @@ gelman_r2_metrics <- function(model, s = 1000, plot = FALSE) {
 
     p <- ggplot() +
       geom_histogram(aes(x = gelman_r2_cond), bins = 30, fill = "skyblue") +
-      labs(title = "Distribution of Gelman Conditional R²", x = "Gelman R²", y = "Frequency") +
+      labs(title = paste("Distribution of Gelman Conditional R² of", modelname), x = "Gelman R²", y = "Frequency") +
       theme_minimal()
 
     return(list(conditional_gelman_r2 = gelman_r2_cond, plot = p))
