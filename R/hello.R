@@ -225,7 +225,7 @@ run_INLA <- function(formula, data) {
 #' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
 #' results <- run_bayesian_imp(data, Y ~ V1 + V2, n_samp=1000, return_samples=TRUE)
 #'
-run_bayesian_imp <- function(data, formula, n_samp=5000, plot=FALSE, return_samples = FALSE, ...) {
+run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, return_samples = FALSE, ...) {
   require(INLA)
 
   # Standardize the data
