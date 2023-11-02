@@ -303,7 +303,7 @@ run_bayesian_imp <- function(data, formula, n_samp=5000, plot=FALSE, return_samp
 #' plot_model <- plot_posteriors(model_results)
 #' plot_model
 #'
-plot_posteriors <- function(model, importance=FALSE) {
+plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   # Get the marginals
   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
   fixed_marginals_list <- lapply(model$marginals.fixed, function(x) x)
@@ -356,9 +356,9 @@ plot_posteriors <- function(model, importance=FALSE) {
   df_combined <- do.call(rbind, c(df_list, df_list_fixed))
 
   if (!importance){
-    plot_title = "Posterior distributions"
+    plot_title = paste("Posterior distributions of:", modelname)
   }else{
-    plot_title = "Posterior proportion of variance"
+    plot_title = paste("Posterior proportion of variance of:", modelname)
   }
 
   # Plot using ggplot
