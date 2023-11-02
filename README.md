@@ -1,5 +1,6 @@
 # BayesianImportance
 **Bayesian Variable Importance for GLMMs using INLA**
+This ia a package developed for my project thesis at NTNU. The project is a 15ECTS project that is followed up by a master thesis the next semester, and therefore lays out the foundation. Tentatively my thesis will be on analyzing heritability traits from sparrows on Helgelandskysten using bayesian statistics.
 
 `BayesianImportance` is an R package designed to compute Bayesian variable importance metrics for Generalized Linear Mixed Models (GLMMs) utilizing the Integrated Nested Laplace Approximation (INLA) methodology.
 
