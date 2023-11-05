@@ -55,13 +55,19 @@ library(readr)
 library(dplyr)
 library(patchwork)
 library(tidyr)
+library(utils)
+library(xtable)
+
+
+
+
 ```
 
 
 ## RETRIEVE DATA
 
 ```{r}
-
+# Remember to change directory to where files are stored
 lmm_results <- read_csv("lmm_results.csv")
 lm_results <- read_csv("lm_results.csv")
 inla_results <- read_csv("inla_results.csv")
@@ -83,10 +89,6 @@ inla_results <- inla_results %>%
 ## SUMMARIZE DATA FOR COMPARISON
 
 ```{r}
-library(dplyr)
-library(readr)
-library(tidyr)
-
 # Function to make data long format
 make_long <- function(data) {
   pivot_longer(data, cols = starts_with("Variance"), names_to = "Variable", values_to = "Value")
@@ -152,9 +154,6 @@ for (effect in effects) {
 ## VIOLIN PLOTS
 
 ```{r}
-library(dplyr)
-library(tidyr)
-library(ggplot2)
 
 lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
 lm_results_long <- pivot_longer(lm_results, cols = starts_with("Variance"))
@@ -213,10 +212,7 @@ effect_plots[["Variance_epsilon"]]
 
 ## WRITE TO LATEX
 The files are stored in the working directory. You can change the working directory to the "Tables" folder under "Latex" under "Prosjekt" to update the tables traight into Latex.
-```{r}
-library(utils)
-# Load the xtable library
-library(xtable)
+```{r, eval=FALSE}
 
 # Define the folder where you want to save the tables
 output_folder_table <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester 9/Prosjekt/Latex/Thesis template NTNU/Tables"
@@ -253,9 +249,7 @@ for (cov_level in names(all_summary_tables$Variance_gamma)) {
 
 ```
 
-```{r}
-library(ggplot2)
-
+```{r, eval=FALSE}
 # Define the folder where you want to save the plots
 output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester 9/Prosjekt/Latex/Thesis template NTNU/Figures/ViolinPlots"
 
