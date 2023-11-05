@@ -82,7 +82,7 @@ relaimpo::calc.relimp(test)
 ## USAGE
 ```{r}
 set.seed(1234)
-model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
+model <- run_bayesian_imp(Y ~ V2 + V3 + (1 | gamma) + (1 | eta), data=data_bayes)
 ```
 
 ```{r}
