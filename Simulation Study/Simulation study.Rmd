@@ -1,0 +1,1007 @@
+---
+title: "Simulation study"
+author: "August Arnstad"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, input=FALSE, echo=FALSE}
+library(formatR)
+showsol <- FALSE
+library(knitr)
+library(devtools)
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 68), 
+                      tidy = TRUE, 
+                      warning = FALSE, 
+                      error = FALSE, 
+                      message = FALSE, 
+                      echo = TRUE, 
+                      fig.width=7, 
+                      fig.height=5, 
+                      fig.align="center")
+```
+
+```{r}
+# If not already installed, install the 'devtools' package
+if(!require(devtools)) install.packages("devtools")
+
+# Install BayesianImportance
+devtools::install_github("AugustArnstad/BayesianImportance")
+# Install decompr2
+devtools::install_git("https://gitlab.com/elonus/decompr2.git")
+```
+
+## SIMULATE DATA
+```{r}
+library(BayesianImportance)
+library(INLA)
+library(mnormt)
+library(ggplot2)
+set.seed(1234)
+
+n <- 10000
+nclass_gamma <- 200
+nclass_eta <- 100
+
+mu <- c(1, 2, 3)
+sigma_none <- matrix(c(1, 0, 0, 0, 1, 0, 0, 0, 1), 3, 3)
+sigma_low <- matrix(c(1, 0.2, 0.2, 0.2, 1, 0.2, 0.2, 0.2, 1), 3, 3)
+sigma_medium <- matrix(c(1, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 1), 3, 3)
+sigma_high <- matrix(c(1, 0.9, 0.9, 0.9, 1, 0.9, 0.9, 0.9, 1), 3, 3)
+
+#Sample a standardized correlated design matrix
+X_none <- rmnorm(n, mu, sigma_none)
+X_low <- rmnorm(n, mu, sigma_low)
+X_medium <- rmnorm(n, mu, sigma_medium)
+X_high <- rmnorm(n, mu, sigma_high)
+
+#Add random effects
+gamma <- rep(rnorm(nclass_gamma, mean=0, sd=1), each=n/nclass_gamma)
+#eta <- rep(rnorm(nclass_eta, 0, sqrt(1)), each=n/nclass_eta)
+epsilon = rnorm(n, mean=0, sd=1)
+
+#Define some formula
+Y_none <-  1 + 1*X_none[, 1] + sqrt(2)*X_none[, 2] + sqrt(3)*X_none[, 3] + gamma + epsilon
+Y_low <-  1 + 1*X_low[, 1] + sqrt(2)*X_low[, 2] + sqrt(3)*X_low[, 3] + gamma + epsilon # + eta write epsilon as a random effect
+Y_medium <-  1 + 1*X_medium[, 1] + sqrt(2)*X_medium[, 2] + sqrt(3)*X_medium[, 3] + gamma + epsilon
+Y_high <-  1 + 1*X_high[, 1] + sqrt(2)*X_high[, 2] + sqrt(3)*X_high[, 3] + gamma + epsilon
+
+
+#Collect as a dataframe
+data_none = data.frame(cbind(Y = Y_none, X = X_none))
+data_none = data.frame(cbind(data_none, gamma=gamma)) 
+
+data_low = data.frame(cbind(Y = Y_low, X = X_low))
+data_low = data.frame(cbind(data_low, gamma=gamma)) 
+
+data_medium = data.frame(cbind(Y = Y_medium, X = X_medium))
+data_medium = data.frame(cbind(data_medium, gamma=gamma)) 
+
+data_high = data.frame(cbind(Y = Y_high, X = X_high))
+data_high = data.frame(cbind(data_high, gamma=gamma)) 
+#data_bayes = data.frame(cbind(data_bayes, eta=eta))
+```
+
+
+```{r}
+set.seed(1234)
+
+model_none <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data_none)
+model_low <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data_low)
+model_medium <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data_medium)
+model_high <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data_high)
+```
+
+
+
+```{r}
+#Create tables
+library(lme4)
+library(relaimpo)
+library(decompR2)
+covariance = c(0, 0.1, 0.5, 0.9)
+
+
+lm_none <- lm(Y ~ V2 + V3 + V4, data = data_none)
+lm_low <- lm(Y ~ V2 + V3 + V4, data = data_low)
+lm_medium <- lm(Y ~ V2 + V3 + V4, data = data_medium)
+lm_high <- lm(Y ~ V2 + V3 + V4, data = data_high)
+
+relaimpo_none <- calc.relimp(lm_none)
+relaimpo_low <- calc.relimp(lm_low)
+relaimpo_medium <- calc.relimp(lm_medium)
+relaimpo_high <- calc.relimp(lm_high)
+
+
+lmm_none <- lmer(Y ~ V2 + V3 + V4 + (1|gamma), data = data_none)
+lmm_low <- lmer(Y ~ V2 + V3 + V4 + (1|gamma), data = data_low)
+lmm_medium <- lmer(Y ~ V2 + V3 + V4 + (1|gamma), data = data_medium)
+lmm_high <- lmer(Y ~ V2 + V3 + V4 + (1|gamma), data = data_high)
+
+summary_lmm_none <- summary(lmm_none)
+summary_lmm_low <- summary(lmm_low)
+summary_lmm_medium <- summary(lmm_medium)
+summary_lmm_high <- summary(lmm_high)
+
+lm_results_table <- data.frame(
+  Covariance = covariance,
+  Variance_V2 = c(relaimpo_none$lmg[1], relaimpo_low$lmg[1], relaimpo_medium$lmg[1], relaimpo_high$lmg[1]),
+  Variance_V3 = c(relaimpo_none$lmg[2], relaimpo_low$lmg[2], relaimpo_medium$lmg[2], relaimpo_high$lmg[2]),
+  Variance_V4 = c(relaimpo_none$lmg[3], relaimpo_low$lmg[3], relaimpo_medium$lmg[3], relaimpo_high$lmg[3])
+)
+
+
+# Calculate the importance for each coefficient
+Variance_V2_none <- (summary_lmm_none$coefficients[2, 1])^2 / 8
+Variance_V2_low <- (summary_lmm_low$coefficients[2, 1])^2 / 8
+Variance_V2_medium <- (summary_lmm_medium$coefficients[2, 1])^2 / 8
+Variance_V2_high <- (summary_lmm_high$coefficients[2, 1])^2 / 8
+
+Variance_V3_none <- (summary_lmm_none$coefficients[3, 1])^2 / 8
+Variance_V3_low <- (summary_lmm_low$coefficients[3, 1])^2 / 8
+Variance_V3_medium <- (summary_lmm_medium$coefficients[3, 1])^2 / 8
+Variance_V3_high <- (summary_lmm_high$coefficients[3, 1])^2 / 8
+
+Variance_V4_none <- (summary_lmm_none$coefficients[4, 1])^2 / 8
+Variance_V4_low <- (summary_lmm_low$coefficients[4, 1])^2 / 8
+Variance_V4_medium <- (summary_lmm_medium$coefficients[4, 1])^2 / 8
+Variance_V4_high <- (summary_lmm_high$coefficients[4, 1])^2 / 8
+
+# Create a table for lmm results with importance
+lmm_results_table <- data.frame(
+  Covariance = covariance,
+  Variance_V2 = c(Variance_V2_none, Variance_V2_low, Variance_V2_medium, Variance_V2_high),
+  Variance_V3 = c(Variance_V3_none, Variance_V3_low, Variance_V3_medium, Variance_V3_high),
+  Variance_V4 = c(Variance_V4_none, Variance_V4_low, Variance_V4_medium, Variance_V4_high),
+  Variance_gamma = c(summary_lmm_none$varcor$gamma[1, 1]/8, summary_lmm_low$varcor$gamma[1, 1]/8, summary_lmm_medium$varcor$gamma[1, 1]/8, summary_lmm_high$varcor$gamma[1, 1]/8)
+)
+
+importance_epsilon_lmm=c()
+for (i in 1:length(covariance)){
+  importance_epsilon_lmm = c(importance_epsilon_lmm, 1-sum(lmm_results_table[i, 2:length(lmm_results_table)]))
+}
+lmm_results_table$Variance_epsilon = importance_epsilon
+
+
+
+matre_none_lmg <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_none, method = "lmg")
+matre_low_lmg <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_low, method = "lmg")
+matre_medium_lmg <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_medium, method = "lmg")
+matre_high_lmg <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_high, method = "lmg")
+# Create a table for decompR2 results
+decompR2_results_table_elmg <- data.frame(
+  Covariance = covariance,
+  Variance_V2 = c(matre_none_lmg["V2"], matre_low_lmg["V2"], matre_medium_lmg["V2"], matre_high_lmg["V2"]),
+  Variance_V3 = c(matre_none_lmg["V3"], matre_low_lmg["V3"], matre_medium_lmg["V3"], matre_high_lmg["V3"]),
+  Variance_V4 = c(matre_none_lmg["V4"], matre_low_lmg["V4"], matre_medium_lmg["V4"], matre_high_lmg["V4"]),
+  Variance_gamma = c(matre_none_lmg["(1 | gamma)"], matre_low_lmg["(1 | gamma)"], matre_medium_lmg["(1 | gamma)"], matre_high_lmg["(1 | gamma)"])
+)
+
+importance_epsilon_elmg=c()
+for (i in 1:length(covariance)){
+  importance_epsilon_elmg = c(importance_epsilon_elmg, 1-sum(decompR2_results_table_elmg[i, 2:length(decompR2_results_table_elmg)]))
+}
+decompR2_results_table_elmg$Variance_epsilon = importance_epsilon_elmg
+
+
+
+matre_none_rw <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_none, method = "rw")
+matre_low_rw <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_low, method = "rw")
+matre_medium_rw <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_medium, method = "rw")
+matre_high_rw <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_high, method = "rw")
+# Create a table for decompR2 results
+decompR2_results_table_erw <- data.frame(
+  Covariance = covariance,
+  Variance_V2 = c(matre_none_rw["V2"], matre_low_rw["V2"], matre_medium_rw["V2"], matre_high_rw["V2"]),
+  Variance_V3 = c(matre_none_rw["V3"], matre_low_rw["V3"], matre_medium_rw["V3"], matre_high_rw["V3"]),
+  Variance_V4 = c(matre_none_rw["V4"], matre_low_rw["V4"], matre_medium_rw["V4"], matre_high_rw["V4"]),
+  Variance_gamma = c(matre_none_rw["(1 | gamma)"], matre_low_rw["(1 | gamma)"], matre_medium_rw["(1 | gamma)"], matre_high_rw["(1 | gamma)"])
+)
+
+importance_epsilon_erw=c()
+for (i in 1:length(covariance)){
+  importance_epsilon_erw = c(importance_epsilon_erw, 1-sum(decompR2_results_table_erw[i, 2:length(decompR2_results_table_erw)]))
+}
+
+decompR2_results_table_erw$Variance_epsilon = importance_epsilon_erw
+
+
+precision_none <- model_none$summary.hyperpar$mean
+precision_low <- model_low$summary.hyperpar$mean
+precision_medium <- model_medium$summary.hyperpar$mean
+precision_high <- model_high$summary.hyperpar$mean
+
+# Convert precision to variance (since variance is the inverse of precision)
+variance_none <- 1 / precision_none
+variance_low <- 1 / precision_low
+variance_medium <- 1 / precision_medium
+variance_high <- 1 / precision_high
+
+posterior_mean_none <- model_none$summary.fixed$mean
+posterior_mean_low <- model_low$summary.fixed$mean
+posterior_mean_medium <- model_medium$summary.fixed$mean
+posterior_mean_high <- model_high$summary.fixed$mean
+
+# Create a table for INLA results
+inla_results_table <- data.frame(
+  Covariance = covariance,
+  Posterior_Variance_V2 = c(posterior_mean_none[2]^2, posterior_mean_low[2]^2, posterior_mean_medium[2]^2, posterior_mean_high[2]^2),
+  Posterior_Variance_V3 = c(posterior_mean_none[3]^2, posterior_mean_low[3]^2, posterior_mean_medium[3]^2, posterior_mean_high[3]^2),
+  Posterior_Variance_V4 = c(posterior_mean_none[4]^2, posterior_mean_low[4]^2, posterior_mean_medium[4]^2, posterior_mean_high[4]^2),
+  Variance_epsilon = c(variance_none[1], variance_low[1], variance_medium[1], variance_high[1]),
+  Variance_gamma = c(variance_none[2], variance_low[2], variance_medium[2], variance_high[2])
+)
+
+```
+
+
+
+
+```{r}
+lm_results_table
+
+lmm_results_table
+
+inla_results_table
+
+decompR2_results_table_elmg
+
+decompR2_results_table_erw
+```
+
+
+### Plots
+
+```{r}
+plot_none = plot_posteriors(model_none, importance=FALSE, modelname = "0 corr")
+plot_low = plot_posteriors(model_low, importance=FALSE, modelname = "0.2 corr")
+plot_medium = plot_posteriors(model_medium, importance=FALSE, modelname = "0.5 corr")
+plot_high = plot_posteriors(model_high, importance=FALSE, modelname="0.9 corr")
+```
+
+
+```{r}
+plot_none$posterior_plot
+plot_low$posterior_plot
+plot_medium$posterior_plot
+plot_high$posterior_plot
+```
+
+
+```{r}
+plot_none_importance = plot_posteriors(model_none, importance=TRUE, modelname = "0 corr")
+plot_low_importance = plot_posteriors(model_low, importance=TRUE, modelname = "0.2 corr")
+plot_medium_importance = plot_posteriors(model_medium, importance=TRUE, modelname = "0.5 corr")
+plot_high_importance = plot_posteriors(model_high, importance=TRUE, modelname="0.9 corr")
+```
+
+
+```{r}
+plot_none_importance$posterior_plot
+plot_low_importance$posterior_plot
+plot_medium_importance$posterior_plot
+plot_high_importance$posterior_plot
+```
+
+
+### Simulation
+
+```{r}
+library(BayesianImportance)
+library(INLA)
+library(mnormt)
+library(ggplot2)
+library(lme4)
+library(relaimpo)
+library(decompR2)
+
+generate_data_2 <- function(n, nclass_gamma, beta, mu, covariance_level, gamma_sd = 1, epsilon_sd = 1) {
+  # Create the covariance matrix based on the specified level
+  sigma <- matrix(c(1, covariance_level, covariance_level, 
+                    covariance_level, 1, covariance_level, 
+                    covariance_level, covariance_level, 1), 3, 3)
+  
+  # Sample a standardized correlated design matrix
+  X <- rmnorm(n, mean = mu, varcov = sigma)
+  
+  # Add random effects
+  gamma <- rep(rnorm(nclass_gamma, mean = 0, sd = gamma_sd), each = n / nclass_gamma)
+  epsilon <- rnorm(n, mean = 0, sd = epsilon_sd)
+  
+  # Define the response variable Y
+  Y <- beta[1] + X %*% beta[-1] + gamma + epsilon
+  
+  # Collect as a dataframe
+  data <- data.frame(Y = Y, X)
+  names(data)[-1] <- paste("V", 1:ncol(X), sep = "")
+  data$gamma <- gamma
+  
+  return(data)
+}
+
+# Define the function to run simulations over different covariance levels
+run_simulation <- function(run_number, n, nclass_gamma, beta, mu, gamma_sd, epsilon_sd, covariance_levels) {
+  # Load necessary libraries
+  library(lme4)
+  library(relaimpo)
+  library(decompR2)
+  
+  # Initialize lists to store results
+  lm_results_list <- list()
+  lmm_results_list <- list()
+  inla_results_list <- list()
+  decompR2_results_list_lmg <- list()
+  decompR2_results_list_rw <- list()
+  
+  # Loop over each covariance level
+  for (cov_level in covariance_levels) {
+    # Generate data
+    data <- generate_data_2(n, nclass_gamma, beta, mu, cov_level, gamma_sd, epsilon_sd)
+    
+    inla_model <- run_bayesian_imp(Y ~ V1 + V2 + V3 + (1 | gamma), data)
+    
+    # Fit linear model
+    lm_model <- lm(Y ~ V1 + V2 + V3, data = data)
+    lmg_results <- decompR2(Y ~ V1 + V2 + V3 + (1 | gamma), data=data, method = "lmg")
+    rw_results <- decompR2(Y ~ V1 + V2 + V3 + (1 | gamma), data=data, method = "rw")
+    
+    # Calculate relative importance using 'relaimpo' package
+    relaimpo_results <- calc.relimp(lm_model)
+    
+    # Fit linear mixed model
+    lmm_model <- lmer(Y ~ V1 + V2 + V3 + (1|gamma), data = data)
+    
+    # Summarize the linear mixed model
+    summary_lmm <- summary(lmm_model)
+    
+    # Store lm results
+    lm_results_list[[as.character(cov_level)]] <- data.frame(
+      Covariance = cov_level,
+      Variance_V1 = relaimpo_results$lmg[1],
+      Variance_V2 = relaimpo_results$lmg[2],
+      Variance_V3 = relaimpo_results$lmg[3]
+    )
+    #rownames(lm_results_list[[as.character(cov_level)]]) <- paste0("Run: ", run_number, "Cov: ", cov_level)
+    #print(rownames(lm_results_list))
+    
+    # Calculate the importance for each coefficient in lmm
+    importance_V1 <- (summary_lmm$coefficients[2, 1])^2 / 8
+    importance_V2 <- (summary_lmm$coefficients[3, 1])^2 / 8
+    importance_V3 <- (summary_lmm$coefficients[4, 1])^2 / 8
+    
+    # Store lmm results
+    lmm_results_list[[as.character(cov_level)]] <- data.frame(
+      Covariance = cov_level,
+      Variance_V1 = importance_V1,
+      Variance_V2 = importance_V2,
+      Variance_V3 = importance_V3,
+      Variance_gamma = summary_lmm$varcor$gamma[1, 1]/8,
+      Variance_epsilon = 1 - sum(c(importance_V1, 
+                                   importance_V2, 
+                                   importance_V3, 
+                                   summary_lmm$varcor$gamma[1, 1]/8)
+                                 )
+    )
+    #rownames(lmm_results_list[[as.character(cov_level)]]) <- paste0("Run: ", run_number, "Cov: ", cov_level)
+    
+    precision <- inla_model$summary.hyperpar$mean
+    variance <- 1 / precision
+    
+    # Extract posterior means
+    posterior_means <- inla_model$summary.fixed$mean
+    
+    # Store INLA results
+    inla_results_list[[as.character(cov_level)]] <- data.frame(
+      Covariance = cov_level,
+      Posterior_Variance_V1 = posterior_means[2]^2,
+      Posterior_Variance_V2 = posterior_means[3]^2,
+      Posterior_Variance_V3 = posterior_means[4]^2,
+      Variance_epsilon = variance[1],
+      Variance_gamma = variance[2]
+    )
+    #rownames(inla_results_list[[as.character(cov_level)]]) <- paste0("Run: ", run_number, "Cov: ", cov_level)
+    
+    # Store decompR2 results for lmg method
+    decompR2_results_list_lmg[[as.character(cov_level)]] <- data.frame(
+      Covariance = cov_level,
+      Variance_V1 = lmg_results["V1"],
+      Variance_V2 = lmg_results["V2"],
+      Variance_V3 = lmg_results["V3"],
+      Variance_gamma = lmg_results["(1 | gamma)"],
+      Variance_epsilon = 1 - sum(lmg_results[c("V1", "V2", "V3", "(1 | gamma)")])
+    )
+    #rownames(decompR2_results_list_lmg[[as.character(cov_level)]]) <- paste0("Run: ", run_number, "Cov: ", cov_level)
+    
+    # Store decompR2 results for rw method
+    decompR2_results_list_rw[[as.character(cov_level)]] <- data.frame(
+      Covariance = cov_level,
+      Variance_V1 = rw_results["V1"],
+      Variance_V2 = rw_results["V2"],
+      Variance_V3 = rw_results["V3"],
+      Variance_gamma = rw_results["(1 | gamma)"],
+      Variance_epsilon = 1 - sum(rw_results[c("V1", "V2", "V3", "(1 | gamma)")])
+    ) 
+    
+    #rownames(decompR2_results_list_rw[[as.character(cov_level)]]) <- paste0("Run: ", run_number, "Cov: ", cov_level)
+    
+    # lm_results_list[[as.character(cov_level)]]$Run <- run_number
+    # lmm_results_list[[as.character(cov_level)]]$Run <- run_number
+    # inla_results_list[[as.character(cov_level)]]$Run <- run_number
+    # decompR2_results_list_lmg[[as.character(cov_level)]]$Run <- run_number
+    # decompR2_results_list_rw[[as.character(cov_level)]]$Run <- run_number
+  }
+  
+  # Combine results into data frames
+  lm_results_table <- do.call(rbind, lm_results_list)
+  lmm_results_table <- do.call(rbind, lmm_results_list)
+  inla_results_table <- do.call(rbind, inla_results_list)
+  decompR2_results_table_lmg <- do.call(rbind, decompR2_results_list_lmg)
+  decompR2_results_table_rw <- do.call(rbind, decompR2_results_list_rw)
+  
+  rownames(lm_results_table) <- c(paste("Run:", run_number, "Cov: none"), 
+                                  paste("Run:", run_number, "Cov: low"), 
+                                  paste("Run:", run_number, "Cov: medium"), 
+                                  paste("Run:", run_number, "Cov: high"))
+  rownames(lmm_results_table) <- c(paste("Run:", run_number, "Cov: none"), 
+                                  paste("Run:", run_number, "Cov: low"), 
+                                  paste("Run:", run_number, "Cov: medium"), 
+                                  paste("Run:", run_number, "Cov: high"))
+  rownames(inla_results_table) <- c(paste("Run:", run_number, "Cov: none"), 
+                                  paste("Run:", run_number, "Cov: low"), 
+                                  paste("Run:", run_number, "Cov: medium"), 
+                                  paste("Run:", run_number, "Cov: high"))
+  rownames(decompR2_results_table_lmg) <- c(paste("Run:", run_number, "Cov: none"), 
+                                  paste("Run:", run_number, "Cov: low"), 
+                                  paste("Run:", run_number, "Cov: medium"), 
+                                  paste("Run:", run_number, "Cov: high"))
+  rownames(decompR2_results_table_rw) <- c(paste("Run:", run_number, "Cov: none"), 
+                                  paste("Run:", run_number, "Cov: low"), 
+                                  paste("Run:", run_number, "Cov: medium"), 
+                                  paste("Run:", run_number, "Cov: high"))
+  
+  print(rownames(lm_results_table))
+  #rownames(lmm_results_table)# <- paste0("Run: ", run_number)
+  #rownames(inla_results_table)# <- paste0("Run: ", run_number)
+  #rownames(decompR2_results_table_lmg)# <- paste0("Run: ", run_number)
+  #rownames(decompR2_results_table_rw)# <- paste0("Run: ", run_number)
+  
+  # rownames(lm_results_table) <- run_number
+  # rownames(lmm_results_table) <- run_number
+  # rownames(inla_results_table) <- run_number
+  # rownames(decompR2_results_table_lmg) <- run_number
+  # rownames(decompR2_results_table_rw) <- run_number
+  
+  #print(rownames(lm_results_table))
+  
+  
+  # Return the results as a list of tables
+  return(list(lm_results_table = lm_results_table, 
+              lmm_results_table = lmm_results_table, 
+              inla_results_table = inla_results_table, 
+              decompR2_results_table_lmg = decompR2_results_table_lmg, 
+              decompR2_results_table_rw = decompR2_results_table_rw)
+         )
+}
+
+
+# Wrapper function to run simulations multiple times
+run_multiple_simulations <- function(num_simulations, n, nclass_gamma, beta, mu, gamma_sd, epsilon_sd, covariance_levels) {
+  # Initialize lists to store the combined results from all simulations
+  all_lm_results <- list()
+  all_lmm_results <- list()
+  all_inla_results <- list()
+  all_decomp_lmg_results <- list()
+  all_decomp_rw_results <- list()
+  
+  # Run the simulation 'num_simulations' times
+  for (i in 1:num_simulations) {
+    cat("Running simulation", i, "\n")  # Optional: print progress
+    
+    # Run a single simulation
+    results <- run_simulation(i, n, nclass_gamma, beta, mu, gamma_sd, epsilon_sd, covariance_levels)
+    
+    #print(rownames(results$lm_results_table))
+    
+    # Append the results of each method to the respective list
+    all_lm_results[[i]] <- results$lm_results_table
+    all_lmm_results[[i]] <- results$lmm_results_table
+    all_inla_results[[i]] <- results$inla_results_table
+    all_decomp_lmg_results[[i]] <- results$decompR2_results_table_lmg
+    all_decomp_rw_results[[i]] <- results$decompR2_results_table_rw
+    #print(rownames(all_lm_results))
+  }
+  
+  # Combine the results from all simulations into data frames
+  combined_lm_results <- do.call(rbind, all_lm_results)
+  combined_lmm_results <- do.call(rbind, all_lmm_results)
+  combined_inla_results <- do.call(rbind, all_inla_results)
+  combined_decomp_lmg_results <- do.call(rbind, all_decomp_lmg_results)
+  combined_decomp_rw_results <- do.call(rbind, all_decomp_rw_results)
+  #print(rownames(combined_lm_results))
+  
+  cat("Almost done \n")
+  # Return a list containing the combined results for each method
+  return(list(
+    lm_results = combined_lm_results,
+    lmm_results = combined_lmm_results,
+    inla_results = combined_inla_results,
+    decomp_lmg_results = combined_decomp_lmg_results,
+    decomp_rw_results = combined_decomp_rw_results
+  ))
+}
+
+```
+
+```{r}
+# Example usage:
+n <- 1000  # Number of responses
+nclass_gamma <- 50  # Number of classes for gamma
+beta <- c(1, 1, sqrt(2), sqrt(3))  # Beta coefficients for the fixed effects
+mu <- c(1, 2, 3)  # Mean for the fixed effects
+covariance_levels <- c(0, 0.1, 0.5, 0.9)  # Covariance level for the design matrix
+gamma_sd <- 1  # Standard deviation for gamma
+epsilon_sd <- 1  # Standard deviation for epsilon
+num_simulations <- 2  # Number of times to run the simulation
+
+# Define other parameters as before...
+
+# Run the multiple simulations
+all_results <- run_multiple_simulations(num_simulations, n, nclass_gamma, beta, mu, gamma_sd, epsilon_sd, covariance_levels)
+
+# Access the combined results for each method
+all_lm_results <- all_results$lm_results
+all_lmm_results <- all_results$lmm_results
+all_inla_results <- all_results$inla_results
+all_decomp_lmg_results <- all_results$decomp_lmg_results
+all_decomp_rw_results <- all_results$decomp_rw_results
+
+```
+
+```{r}
+all_lm_results
+all_lmm_results
+all_inla_results
+all_decomp_lmg_results
+all_decomp_rw_results
+```
+
+```{r}
+paste("test", 5)
+```
+
+
+
+
+```{r}
+# Example usage:
+n <- 1000  # Number of responses
+nclass_gamma <- 50  # Number of classes for gamma
+beta <- c(1, 1, sqrt(2), sqrt(3))  # Beta coefficients for the fixed effects
+mu <- c(1, 2, 3)  # Mean for the fixed effects
+covariance_levels <- c(0, 0.1, 0.5, 0.9)  # Covariance level for the design matrix
+gamma_sd <- 1  # Standard deviation for gamma
+epsilon_sd <- 1  # Standard deviation for epsilon
+
+# Run the simulation
+results <- run_simulation(n, nclass_gamma, beta, mu, gamma_sd, epsilon_sd, covariance_levels)
+
+# Access the results
+lm_results <- results$lm_results_table
+lmm_results <- results$lmm_results_table
+inla_results <- results$inla_results_table
+decomp_lmg_results <- results$decompR2_results_table_lmg
+decomp_rw_results <- results$decompR2_results_table_rw
+```
+
+```{r}
+lm_results
+
+#lmm_results
+
+#inla_results
+
+#decomp_lmg_results
+
+#decomp_rw_results
+```
+
+
+
+
+```{r}
+run_simulation <- function(data, method, covariance_level) {
+  # Initialize an empty data frame to store results
+  results_df <- data.frame()
+  
+  # Run the appropriate model based on the method
+  switch(method,
+    lm = {
+      model <- lm(Y ~ V2 + V3 + V4, data = data)
+      relaimpo_results <- calc.relimp(model)
+      results_df <- data.frame(
+        Covariance = covariance_level,
+        Importance_V2 = relaimpo_results$lmg[1],
+        Importance_V3 = relaimpo_results$lmg[2],
+        Importance_V4 = relaimpo_results$lmg[3]
+      )
+    },
+    lmm = {
+      model <- lmer(Y ~ V2 + V3 + V4 + (1|gamma), data = data)
+      summary_model <- summary(model)
+      results_df <- data.frame(
+        Covariance = covariance_level,
+        Importance_V2 = (summary_model$coefficients[2, "Estimate"])^2,
+        Importance_V3 = (summary_model$coefficients[3, "Estimate"])^2,
+        Importance_V4 = (summary_model$coefficients[4, "Estimate"])^2,
+        Variance_gamma = summary_model$varcor$gamma[1, 1],
+        Variance_epsilon = attr(summary_model$varcor, "sc")^2  # Residual variance
+      )
+    },
+    inla = {
+      # Assuming you have a function named 'run_bayesian_imp' to run INLA and extract results
+      model <- run_bayesian_imp(formula = Y ~ V2 + V3 + V4 + (1 | gamma), data = data)
+      posterior_mean <- model$summary.fixed$mean
+      precision <- model$summary.hyperpar$mean
+      variance <- 1 / precision  # Convert precision to variance
+      results_df <- data.frame(
+        Covariance = covariance_level,
+        Posterior_Importance_V2 = posterior_mean[2]^2,
+        Posterior_Importance_V3 = posterior_mean[3]^2,
+        Posterior_Importance_V4 = posterior_mean[4]^2,
+        Variance_epsilon = variance[1],
+        Variance_gamma = variance[2]
+      )
+    },
+    decompR2_elmg = {
+      matre <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data = data, method = "lmg")
+      results_df <- data.frame(
+        Covariance = covariance_level,
+        Importance_V2 = matre["V2"],
+        Importance_V3 = matre["V3"],
+        Importance_V4 = matre["V4"],
+        Variance_gamma = matre["(1 | gamma)"]
+      )
+      results_df$Variance_epsilon = 1 - sum(results_df[2:5])
+    },
+    decompR2_erw = {
+      matre <- decompR2(Y ~ V2 + V3 + V4 + (1 | gamma), data = data, method = "rw")
+      results_df <- data.frame(
+        Covariance = covariance_level,
+        Importance_V2 = matre["V2"],
+        Importance_V3 = matre["V3"],
+        Importance_V4 = matre["V4"],
+        Variance_gamma = matre["(1 | gamma)"]
+      )
+      results_df$Variance_epsilon = 1 - sum(results_df[2:5])
+    },
+    {
+      # Default case if method is not recognized
+      stop("Unknown method")
+    }
+  )
+  
+  # Return the results data frame
+  return(results_df)
+}
+
+generate_data <- function(n, nclass_gamma, beta, fixed_effects_mean, covariance_matrix, gamma_variance, epsilon_variance) {
+  # Check if the covariance matrix is square and of correct dimension
+  if (!is.matrix(covariance_matrix) || nrow(covariance_matrix) != ncol(covariance_matrix)) {
+    stop("Covariance matrix must be a square matrix.")
+  }
+  
+  # Check if the length of beta is equal to the number of fixed effects
+  if (length(beta) != length(fixed_effects_mean)) {
+    stop("Length of beta must be equal to the number of fixed effects.")
+  }
+  
+  # Generate random effects
+  gamma <- rep(rnorm(nclass_gamma, mean = 0, sd = sqrt(gamma_variance)), each = n / nclass_gamma)
+  epsilon <- rnorm(n, mean = 0, sd = sqrt(epsilon_variance))
+  
+  # Generate fixed effects
+  X <- mnormt::rmnorm(n, mean = fixed_effects_mean[-1], varcov = covariance_matrix)
+
+  
+  # Calculate the response variable Y using the fixed and random effects
+  Y <- beta[1] + X %*% beta[-1] + gamma + epsilon
+  
+  # Combine into a data frame
+  data <- data.frame(Y = Y, X)
+  names(data)[-1] <- paste0("V", 2:(length(beta)))  # Rename X columns to V2, V3, ...
+  data$gamma <- gamma  # Add gamma as a column in the data frame
+  
+  return(data)
+}
+
+
+# Example usage:
+n <- 1000  # Number of responses
+nclass_gamma <- 50  # Number of classes for gamma
+beta <- c(1, 1, sqrt(2), sqrt(3))  # Beta coefficients for the fixed effects
+fixed_effects_mean <- c(1, 1, 2, 3)  # Mean for the fixed effects
+covariance_matrix <- matrix(c(1, 0.5, 0.5, 0.5, 1, 0.5, 0.5, 0.5, 1), 3, 3)  # Covariance matrix
+gamma_variance <- 1  # Variance for gamma
+epsilon_variance <- 1  # Variance for epsilon
+
+# Generate the data
+datas <- generate_data(n, nclass_gamma, beta, fixed_effects_mean, covariance_matrix, gamma_variance, epsilon_variance)
+
+# Now you can use 'data' in your simulations or analyses
+datas
+
+methods <- c("lm", "lmm", "inla", "decompR2_elmg", "decompR2_erw")
+covariance_levels <- c(0, 0.1, 0.5, 0.9)
+
+sim <- run_simulation(datas, "lm", covariance_levels)
+```
+
+```{r}
+sim
+```
+
+
+
+```{r}
+# Assuming you have a function `run_simulation` that takes data and returns a data frame of results
+run_simulation <- function(data, method, covariance_level) {
+  # ... run the model ...
+  # return a data frame with results
+}
+
+# Define your parameters
+methods <- c("lm", "lmm", "inla", "decompR2_elmg", "decompR2_erw")
+covariance_levels <- c(0, 0.1, 0.5, 0.9)
+num_simulations <- 1000
+
+# Create a template data frame
+template_df <- expand.grid(
+  Method = methods,
+  Covariance = covariance_levels,
+  Simulation = 1:num_simulations,
+  stringsAsFactors = FALSE
+)
+
+# Initialize a list to store results
+results_list <- vector("list", length = num_simulations)
+
+# Run simulations
+for (i in 1:num_simulations) {
+  # Generate data for this simulation
+  data <- generate_data(covariance_levels[i])
+  
+  # Run each method on the data
+  for (method in methods) {
+    results <- run_simulation(data, method, covariance_levels[i])
+    # Store results in the template data frame
+    template_df[template_df$Method == method & template_df$Covariance == covariance_levels[i] & template_df$Simulation == i, "Results"] <- results
+  }
+  
+  # Store the filled template data frame in the list
+  results_list[[i]] <- template_df
+  
+  # Optionally, save intermediate results to a file
+  saveRDS(template_df, file = paste0("simulation_results_", i, ".rds"))
+}
+
+# Combine all results into one data frame
+final_results_df <- do.call(rbind, results_list)
+
+# Save the final results
+saveRDS(final_results_df, file = "final_simulation_results.rds")
+
+```
+
+
+
+
+
+
+
+### Test code
+
+```{r}
+library(ggplot2)
+library(reshape2)
+
+# Melting the data for ggplot
+melted_data <- melt(combined_data, id.vars = "Covariance")
+
+# Function to create a plot for a given covariance level
+create_plot_for_covariance <- function(cov_level) {
+  filtered_data <- subset(melted_data, Covariance == cov_level)
+  
+  ggplot(filtered_data, aes(x = variable, y = value, fill = variable)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    labs(title = paste("Variable Importance for Covariance =", cov_level),
+         x = "Variable",
+         y = "Importance") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+# Creating and displaying plots for each covariance level
+plot_0 <- create_plot_for_covariance(0)
+plot_0.1 <- create_plot_for_covariance(0.1)
+plot_0.5 <- create_plot_for_covariance(0.5)
+plot_0.9 <- create_plot_for_covariance(0.9)
+
+# Display the plots
+plot_0
+plot_0.1
+plot_0.5
+plot_0.9
+
+```
+
+```{r}
+library(ggplot2)
+library(reshape2)
+
+# Melting the data for ggplot
+melted_data <- melt(combined_data, id.vars = "Covariance")
+
+# Function to create a plot for a given covariance level and predictor
+create_plot_for_covariance_and_predictor <- function(cov_level, predictor) {
+  filtered_data <- subset(melted_data, Covariance == cov_level & variable == predictor)
+  
+  ggplot(filtered_data, aes(x = Method, y = value, fill = Method)) +
+    geom_bar(stat = "identity", position = position_dodge()) +
+    labs(title = paste("Importance of", predictor, "for Covariance =", cov_level),
+         x = "Method",
+         y = "Importance") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+# List of predictors
+predictors <- c("V2", "V3", "V4", "Gamma", "Epsilon")
+
+# Creating and displaying plots for each covariance level and predictor
+plots <- list()
+for (cov_level in c(0, 0.1, 0.5, 0.9)) {
+  for (predictor in predictors) {
+    plot_name <- paste("plot", cov_level, predictor, sep = "_")
+    plots[[plot_name]] <- create_plot_for_covariance_and_predictor(cov_level, predictor)
+  }
+}
+
+# Display the plots (example for Covariance = 0 and Predictor = V2)
+plots[["plot_0_V2"]]
+
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Combine all data frames into one and add a method column
+combined_df <- bind_rows(
+  lmm_results_table %>% mutate(Method = "LMM"),
+  inla_results_table %>% mutate(Method = "INLA"),
+  decompR2_results_table_elmg %>% mutate(Method = "DecompR2_ELMG"),
+  decompR2_results_table_erw %>% mutate(Method = "DecompR2_ERW")
+)
+
+# Melt the data frame to long format for ggplot
+long_df <- combined_df %>%
+  pivot_longer(cols = starts_with("Importance"), names_to = "Variable", values_to = "Importance")
+
+# Plot for Variable Importance
+ggplot(long_df, aes(x = Covariance, y = Importance, fill = Method)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_wrap(~ Variable, scales = "free") +
+  theme_minimal() +
+  labs(title = "Variable Importance Across Different Methods",
+       x = "Covariance", y = "Importance")
+
+# Melt the data frame for random effects variance
+long_df_variance <- combined_df %>%
+  pivot_longer(cols = c("Random_Variance", "Variance_epsilon"),
+               names_to = "Random_Effect", values_to = "Variance")
+
+# Plot for Random Effects Variance
+ggplot(long_df_variance, aes(x = Covariance, y = Variance, fill = Method)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_wrap(~ Random_Effect, scales = "free") +
+  theme_minimal() +
+  labs(title = "Random Effects Variance Across Different Methods",
+       x = "Covariance", y = "Variance")
+
+```
+
+
+```{r}
+covariance = c(0, 0.1, 0.5, 0.9)
+importance_epsilon=c()
+for (i in 1:length(covariance)){
+  importance_epsilon = c(importance_epsilon, 1-sum(decompR2_results_table_elmg[i, 2:length(decompR2_results_table_elmg)]))
+}
+
+importance_epsilon
+#length(covariance)
+#length(decompR2_results_table_elmg)
+#sum(decompR2_results_table_elmg[1, 2:length(decompR2_results_table_elmg)])
+```
+
+
+```{r}
+gelman_r2_none = gelman_r2_metrics(model_none, s=1000, plot=TRUE, modelname="0 Corr")
+gelman_r2_none$plot
+summary(gelman_r2_none$conditional_gelman_r2)
+
+gelman_r2_low = gelman_r2_metrics(model_low, s=1000, plot=TRUE, modelname = "0.2 corr")
+gelman_r2_low$plot
+summary(gelman_r2_low$conditional_gelman_r2)
+
+gelman_r2_medium = gelman_r2_metrics(model_medium, s=1000, plot=TRUE, modelname = "0.5 corr")
+gelman_r2_medium$plot
+summary(gelman_r2_medium$conditional_gelman_r2)
+
+gelman_r2_high = gelman_r2_metrics(model_high, s=1000, plot=TRUE, modelname = "0.9 corr")
+gelman_r2_high$plot
+summary(gelman_r2_high$conditional_gelman_r2)
+```
+
+
+
+```{r}
+library(ggplot2)
+
+# Merging all tables into one for easier plotting
+all_results <- merge(lm_results_table, lmm_results_table, by="Covariance", suffixes=c("_lm", "_lmm"))
+all_results <- merge(all_results, inla_results_table, by="Covariance")
+all_results <- merge(all_results, decompR2_results_table_lmg, by="Covariance", suffixes=c("_inla", "_decompr2_lmg"))
+all_results <- merge(all_results, decompR2_results_table_rw, by="Covariance", suffixes=c("_decompr2_lmg", "_decompr2_rw"))
+
+# Melting data for ggplot
+library(reshape2)
+all_results_melted <- melt(all_results, id.vars = "Covariance")
+
+# Plotting
+ggplot(all_results_melted, aes(x = Covariance, y = value, color = variable, group = variable)) +
+  geom_line() +
+  labs(title = "Variable Importance Across Different Methods",
+       x = "Covariance Level",
+       y = "Importance",
+       color = "Method") +
+  theme_minimal()
+```
+
+
+## USAGE
+```{r}
+set.seed(1234)
+model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
+```
+
+```{r}
+plot_model = plot_posteriors(model, importance=FALSE)
+plot_model$posterior_plot
+```
+
+```{r}
+plot_model = plot_posteriors(model, importance=TRUE)
+plot_model$posterior_plot
+```
+
+```{r}
+gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
+gelman_r2$plot
+summary(gelman_r2$conditional_gelman_r2)
+```
+
+```{r, eval=FALSE}
+rmarkdown::render(input = "BayesianImportanceExample.Rmd", output_format = "pdf_document")
+```
