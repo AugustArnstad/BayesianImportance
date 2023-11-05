@@ -5,7 +5,7 @@ This ia a package developed for my project thesis at NTNU. The project is a 15EC
 `BayesianImportance` is an R package designed to compute Bayesian variable importance metrics for Generalized Linear Mixed Models (GLMMs) utilizing the Integrated Nested Laplace Approximation (INLA) methodology.
 
 ## Features
-- **Bayesian Variable Importance Computation**: Allows for the quantification of the importance of predictors in GLMMs in a Bayesian framework.
+- **Bayesian Variable Importance Computation**: Allows for the quantification of the importance of predictors in GLMMs in a Bayesian framework. Currently it only works with LMM's but this is thought to be extended in the near future.
 - **INLA Integration**: Leverages the computational advantages of INLA, a popular method for Bayesian inference for latent Gaussian models.
 - **Support for Various GLMMs**: Compatible with a wide range of generalized linear mixed models.
 - **Extensible**: Designed with the modern R user in mind, offering a range of utilities to further expand upon the base functionality.
@@ -23,13 +23,24 @@ devtools::install_github("AugustArnstad/BayesianImportance")
 ## Usage
 To compute the Bayesian variable importance for your GLMMs, follow the basic structure:
 
-```R
-library(BayesianImportance)
-# ... [Your GLMM setup and data]
-# result <- bayesian_importance(your_model)
-```
+```{r}
+set.seed(1234)
+model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
 
+plot_model = plot_posteriors(model, importance=FALSE)
+plot_model$posterior_plot
+
+plot_model = plot_posteriors(model, importance=TRUE)
+plot_model$posterior_plot
+
+gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
+gelman_r2$plot
+summary(gelman_r2$conditional_gelman_r2)
+```
 Detailed examples and tutorials will be made available in future releases.
+
+## Simulation study
+In the folder simulation study, we have four files, that contribute to a simulation study where the Bayesian Importance method is compared to other, frequentist and more established, methods in the field of mathematics. Simulation study preparation.Rmd and Simulation study.Rmd are drafts mostly made for how one should do the simulation study and can be viewed as redundant. Simulation run.Rmd contains the code that runs the simulation study and writes the results to the attached csv files. Simulation study analysis.Rmd contains analysis of the resulting files, which is done by violin plots and tables to compare the Bayesian Importance package with other methods that are established in the mathematical field.
 
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
