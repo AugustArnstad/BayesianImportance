@@ -43,6 +43,8 @@ Detailed examples and tutorials will be made available in future releases.
 ## Simulation study
 In the folder simulation study, we have four files, that contribute to a simulation study where the Bayesian Importance method is compared to other, frequentist and more established, methods in the field of mathematics. Simulation study preparation.Rmd and Simulation study.Rmd are drafts mostly made for how one should do the simulation study and can be viewed as redundant. Simulation run.Rmd contains the code that runs the simulation study and writes the results to the attached csv files. Simulation study analysis.Rmd contains analysis of the resulting files, which is done by violin plots and tables to compare the Bayesian Importance package with other methods that are established in the mathematical field.
 
+The analysis pdf is also attached so one can see how the analysis is done.
+
 ## Documentation
 Further documentation and function references can be found within the package. Use the standard R help and documentation commands to access detailed information about each function.
 
