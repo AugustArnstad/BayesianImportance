@@ -37,6 +37,7 @@ gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
 gelman_r2$plot
 summary(gelman_r2$conditional_gelman_r2)
 ```
+where all functions are found in the R folder.
 Detailed examples and tutorials will be made available in future releases.
 
 ## Simulation study
