@@ -58,9 +58,6 @@ library(tidyr)
 library(utils)
 library(xtable)
 
-
-
-
 ```
 
 
@@ -75,14 +72,14 @@ decomp_lmg_results <- read_csv("decomp_lmg_results.csv")
 decomp_rw_results <- read_csv("decomp_rw_results.csv")
 
 # Rename the INLA columns to match the others
-inla_results <- inla_results %>%
-  rename(
-    Variance_V1 = Posterior_Variance_V1,
-    Variance_V2 = Posterior_Variance_V2,
-    Variance_V3 = Posterior_Variance_V3,
-    Variance_gamma = Variance_gamma,
-    Variance_epsilon = Variance_epsilon
-  )
+# inla_results <- inla_results %>%
+#   rename(
+#     Variance_V1 = Posterior_Variance_V1,
+#     Variance_V2 = Posterior_Variance_V2,
+#     Variance_V3 = Posterior_Variance_V3,
+#     Variance_gamma = Variance_gamma,
+#     Variance_epsilon = Variance_epsilon
+#   )
 ```
 
 
@@ -95,14 +92,14 @@ make_long <- function(data) {
 }
 
 # Apply the function to make data long format
-lmm_results_long_data <- make_long(lmm_results)
+#lmm_results_long_data <- make_long(lmm_results)
 lm_results_long_data <- make_long(lm_results)
 inla_results_long_data <- make_long(inla_results)
 decomp_lmg_results_long_data <- make_long(decomp_lmg_results)
 decomp_rw_results_long_data <- make_long(decomp_rw_results)
 
 # Define the covariance levels you have in your data
-covariance_levels <- unique(lmm_results$Covariance)
+covariance_levels <- unique(lm_results$Covariance)
 
 # Function to calculate summary statistics
 calculate_summary <- function(data, variable_name, cov_level) {
@@ -120,14 +117,14 @@ create_summary_tables <- function(effect) {
   summary_tables <- list()
   
   for (cov_level in covariance_levels) {
-    lmm_summary <- calculate_summary(lmm_results_long_data, effect, cov_level) %>% mutate(Method = "LMM")
+    #lmm_summary <- calculate_summary(lmm_results_long_data, effect, cov_level) %>% mutate(Method = "LMM")
     lm_summary <- calculate_summary(lm_results_long_data, effect, cov_level) %>% mutate(Method = "LM")
     inla_summary <- calculate_summary(inla_results_long_data, effect, cov_level) %>% mutate(Method = "INLA")
     decomp_lmg_summary <- calculate_summary(decomp_lmg_results_long_data, effect, cov_level) %>% mutate(Method = "Decomp_LMG")
     decomp_rw_summary <- calculate_summary(decomp_rw_results_long_data, effect, cov_level) %>% mutate(Method = "Decomp_RW")
     
     summary_tables[[as.character(cov_level)]] <- bind_rows(
-      lmm_summary,
+      #lmm_summary,
       lm_summary,
       inla_summary,
       decomp_lmg_summary,
@@ -155,7 +152,7 @@ for (effect in effects) {
 
 ```{r}
 
-lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
+#lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
 lm_results_long <- pivot_longer(lm_results, cols = starts_with("Variance"))
 inla_results_long <- pivot_longer(inla_results, cols = starts_with("Variance"))
 decomp_lmg_results_long <- pivot_longer(decomp_lmg_results, cols = starts_with("Variance"))
@@ -165,7 +162,7 @@ theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8,
 # Combine all datasets into one with a 'Method' column
 combined_results_long <- bind_rows(
   mutate(lm_results_long, Method = 'LM'),
-  mutate(lmm_results_long, Method = 'LMM'),
+  #mutate(lmm_results_long, Method = 'LMM'),
   mutate(inla_results_long, Method = 'INLA'),
   mutate(decomp_lmg_results_long, Method = 'Decomp_LMG'), 
   mutate(decomp_rw_results_long, Method = 'Decomp_RW')
@@ -181,6 +178,7 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
     filter(name == effect) %>%
     mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
   
+  
   # Create the violin plot for the current effect
   p <- ggplot(data_for_plot, aes(x = Covariance, y = value, fill = Method)) +
     geom_violin(trim = FALSE) +
@@ -190,11 +188,83 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
          x = "Covariance Level") +
     theme_minimal() +
     theme(legend.position = "bottom") +  # Adjust legend position as needed
-    facet_wrap(~Method, scales = "free_y")  # Separate plots by Method
+    facet_wrap(~Method)  # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
+
   
   # Add the plot to the list
   effect_plots[[effect]] <- p
 }
+
+```
+
+## Theoretical explained variance
+```{r}
+# Model parameters
+beta <- c(1, sqrt(2), sqrt(3))
+vi <- rep(1, length(beta))  # Assuming v_i = 1 for all i
+sigma_epsilon_sq <- 1  # Residual variance (replace with your value)
+sigma_gamma_sq <- 1    # Random effect variance (replace with your value)
+
+# Covariance levels
+rho_values <- c(0, 0.1, 0.5, 0.9)
+
+# Calculate conditional and marginal R-squared for each covariance level
+variance_explained <- data.frame(
+  rho = rho_values,
+  R2_conditional = numeric(length(rho_values)),
+  R2_marginal = numeric(length(rho_values))
+)
+
+for (i in 1:length(rho_values)) {
+  rho <- rho_values[i]
+  
+  # Calculate Var(Y) for the current rho
+  var_Y <- sum((beta^2) * vi) + sum(beta[1] * beta[2] * sqrt(vi[1] * vi[2]) * rho) + sigma_gamma_sq + sigma_epsilon_sq
+  cat(var_Y)
+  
+  # Calculate conditional R-squared
+  R2_conditional <- (var_Y - sigma_epsilon_sq) / var_Y
+  
+  # Calculate marginal R-squared
+  R2_marginal <- (var_Y - sigma_epsilon_sq - sigma_gamma_sq) / var_Y
+  
+  variance_explained[i, "R2_conditional"] <- R2_conditional
+  variance_explained[i, "R2_marginal"] <- R2_marginal
+}
+
+
+data_for_marginal_variance <- combined_results_long %>% 
+  filter(name == "Variance_total_marginal") %>%
+  mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
+
+data_for_conditional_variance <- combined_results_long %>% 
+  filter(name == "Variance_total_conditional") %>%
+  mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
+
+
+ # Create the violin plot for the current effect
+marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance, y = value, fill=Method)) +
+  geom_violin(trim = FALSE) +
+  labs(title = paste("Results for total marginal variance"),
+        y = "Variance",
+        x = "Covariance Level") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +  # Adjust legend position as needed
+  facet_wrap(~Method) +  # Separate plots by Method 
+  geom_hline(data = variance_explained, aes(yintercept = R2_marginal, color = ), linetype = "dashed") 
+
+
+conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covariance, y = value, fill=Method)) +
+  geom_violin(trim = FALSE) +
+  labs(title = paste("Results for total conditional variance"),
+        y = "Variance",
+        x = "Covariance Level") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +  # Adjust legend position as needed
+  facet_wrap(~Method) +  # Separate plots by Method 
+  geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
+
+conditional_variance_plot
 
 ```
 
@@ -203,12 +273,19 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
 ```{r}
 all_summary_tables
 
+#The INLA value is the posterior mean of the fixed effect
+
 effect_plots[["Variance_V1"]]
 effect_plots[["Variance_V2"]]
 effect_plots[["Variance_V3"]]
 effect_plots[["Variance_gamma"]]
 effect_plots[["Variance_epsilon"]]
+
+marginal_variance_plot
+conditional_variance_plot
 ```
+
+
 
 ## WRITE TO LATEX
 The files are stored in the working directory. You can change the working directory to the "Tables" folder under "Latex" under "Prosjekt" to update the tables traight into Latex.
@@ -265,6 +342,11 @@ for (effect_name in names(effect_plots)) {
   ggsave(file_name, plot = effect_plots[[effect_name]], width = 10, height = 6, dpi = 300)
 }
 
+file_name <- file.path(output_folder_plots, paste("Marginal_Variance.png", sep = ""))
+ggsave(file_name, plot = marginal_variance_plot, width = 10, height = 6, dpi = 300)
+
+file_name <- file.path(output_folder_plots, paste("Conditional_Variance.png", sep = ""))
+ggsave(file_name, plot = conditional_variance_plot, width = 10, height = 6, dpi = 300)
 ```
 
 

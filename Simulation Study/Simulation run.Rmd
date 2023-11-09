@@ -105,8 +105,14 @@ run_simulation <- function(run_number, n, nclass_gamma, beta, mu, gamma_sd, epsi
     # Calculate relative importance using 'relaimpo' package
     relaimpo_results <- calc.relimp(lm_model)
     
+    lmm_data <- standardize_data(data)
+
+    lmm_data_processed <- preprocess_data_formula(Y ~ V1 + V2 + V3 + (1|gamma), lmm_data)
+    lmm_test_data = cbind(Y=lmm_data_processed$Y, lmm_data_processed$X, gamma = lmm_data_processed$random$gamma)
+
+    lmm_test_data = as.data.frame(lmm_test_data)
     # Fit linear mixed model
-    lmm_model <- lmer(Y ~ V1 + V2 + V3 + (1|gamma), data = data)
+    lmm_model <- lmer(Y ~ V1 + V2 + V3 + (1|gamma), data = lmm_test_data)
     
     # Summarize the linear mixed model
     summary_lmm <- summary(lmm_model)
@@ -121,9 +127,9 @@ run_simulation <- function(run_number, n, nclass_gamma, beta, mu, gamma_sd, epsi
     )
     
     # Calculate the importance for each coefficient in lmm
-    importance_V1 <- (summary_lmm$coefficients[2, 1])^2 / 8
-    importance_V2 <- (summary_lmm$coefficients[3, 1])^2 / 8
-    importance_V3 <- (summary_lmm$coefficients[4, 1])^2 / 8
+    importance_V1 <- (summary_lmm$coefficients[2, 1])^2
+    importance_V2 <- (summary_lmm$coefficients[3, 1])^2
+    importance_V3 <- (summary_lmm$coefficients[4, 1])^2
     
     # Store lmm results
     lmm_results_list[[as.character(cov_level)]] <- data.frame(
@@ -132,13 +138,10 @@ run_simulation <- function(run_number, n, nclass_gamma, beta, mu, gamma_sd, epsi
       Variance_V1 = importance_V1,
       Variance_V2 = importance_V2,
       Variance_V3 = importance_V3,
-      Variance_gamma = summary_lmm$varcor$gamma[1, 1]/8,
-      Variance_epsilon = 1 - sum(c(importance_V1, 
-                                   importance_V2, 
-                                   importance_V3, 
-                                   summary_lmm$varcor$gamma[1, 1]/8)
-                                 )
+      Variance_gamma = summary_lmm$varcor$gamma[1],
+      Variance_epsilon = summary_lmm$sigma^2
     )
+
     
     precision <- inla_model$summary.hyperpar$mean
     variance <- 1 / precision
@@ -150,9 +153,9 @@ run_simulation <- function(run_number, n, nclass_gamma, beta, mu, gamma_sd, epsi
     inla_results_list[[as.character(cov_level)]] <- data.frame(
       Run = run_number,
       Covariance = cov_level,
-      Posterior_Variance_V1 = posterior_means[2]^2,
-      Posterior_Variance_V2 = posterior_means[3]^2,
-      Posterior_Variance_V3 = posterior_means[4]^2,
+      Variance_V1 = posterior_means[2]^2,
+      Variance_V2 = posterior_means[3]^2,
+      Variance_V3 = posterior_means[4]^2,
       Variance_epsilon = variance[1],
       Variance_gamma = variance[2]
     )
@@ -246,10 +249,50 @@ run_multiple_simulations <- function(num_simulations, n, nclass_gamma, beta, mu,
   
   # Combine the results from all simulations into data frames
   combined_lm_results <- do.call(rbind, all_lm_results)
+  combined_lm_results$Variance_total_marginal <- rowSums(combined_lm_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3")])
   combined_lmm_results <- do.call(rbind, all_lmm_results)
+  combined_lmm_results$Variance_total_marginal <- rowSums(combined_lmm_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3")])
+  combined_lmm_results$Variance_total_conditional <- rowSums(combined_lmm_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3", 
+                                                                      "Variance_gamma")])
   combined_inla_results <- do.call(rbind, all_inla_results)
+  combined_inla_results$Variance_total_marginal <- rowSums(combined_inla_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3")])
+  combined_inla_results$Variance_total_conditional <- rowSums(combined_inla_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3",
+                                                                      "Variance_gamma")])
   combined_decomp_lmg_results <- do.call(rbind, all_decomp_lmg_results)
+  combined_decomp_lmg_results$Variance_total_marginal <- rowSums(combined_decomp_lmg_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3")])
+  combined_decomp_lmg_results$Variance_total_conditional <- rowSums(combined_decomp_lmg_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3", 
+                                                                      "Variance_gamma")])
   combined_decomp_rw_results <- do.call(rbind, all_decomp_rw_results)
+  combined_decomp_rw_results$Variance_total_marginal <- rowSums(combined_decomp_rw_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3")])
+    combined_decomp_rw_results$Variance_total_conditional <- rowSums(combined_decomp_rw_results[, 
+                                                                    c("Variance_V1", 
+                                                                      "Variance_V2", 
+                                                                      "Variance_V3",
+                                                                      "Variance_gamma")])
 
   cat("Almost done \n")
   # Return a list containing the combined results for each method
@@ -273,7 +316,7 @@ mu <- c(1, 2, 3)  # Mean for the fixed effects
 covariance_levels <- c(0, 0.1, 0.5, 0.9)  # Covariance level for the design matrix
 gamma_sd <- 1  # Standard deviation for gamma
 epsilon_sd <- 1  # Standard deviation for epsilon
-num_simulations <- 1000  # Number of times to run the simulation
+num_simulations <- 5  # Number of times to run the simulation
 
 # Define other parameters as before...
 
@@ -287,26 +330,72 @@ all_results <- run_multiple_simulations(num_simulations, n, nclass_gamma, beta, 
 #all_decomp_lmg_results <- all_results$decomp_lmg_results
 #all_decomp_rw_results <- all_results$decomp_rw_results
 
+#write.csv(all_results$lm_results, "lm_results.csv", row.names = TRUE)
+#write.csv(all_results$lmm_results, "lmm_results.csv", row.names = TRUE)
+#write.csv(all_results$inla_results, "inla_results.csv", row.names = TRUE)
+#write.csv(all_results$decomp_lmg_results, "decomp_lmg_results.csv", row.names = TRUE)
+#write.csv(all_results$decomp_rw_results, "decomp_rw_results.csv", row.names = TRUE)
+
+```
+
+```{r}
+all_results$lmm_results
+#all_lmm_results
+#all_inla_results
+#all_decomp_lmg_results
+#all_decomp_rw_results
+```
+
+
+```{r}
 write.csv(all_results$lm_results, "lm_results.csv", row.names = TRUE)
 write.csv(all_results$lmm_results, "lmm_results.csv", row.names = TRUE)
 write.csv(all_results$inla_results, "inla_results.csv", row.names = TRUE)
 write.csv(all_results$decomp_lmg_results, "decomp_lmg_results.csv", row.names = TRUE)
 write.csv(all_results$decomp_rw_results, "decomp_rw_results.csv", row.names = TRUE)
-
 ```
 
 ```{r}
-all_lm_results
-all_lmm_results
-all_inla_results
-all_decomp_lmg_results
-all_decomp_rw_results
+n <- 10000
+nclass_gamma <- 200
+beta <- c(1, 1, sqrt(2), sqrt(3))  # Beta coefficients for the fixed effects
+mu <- c(1, 2, 3)  # Mean for the fixed effects
+covariance_levels <- c(0, 0.1, 0.5, 0.9)  # Covariance level for the design matrix
+gamma_sd <- 1  # Standard deviation for gamma
+epsilon_sd <- 1  # Standard deviation for epsilon
+data <- generate_data_2(n, nclass_gamma, beta, mu, 0.9, gamma_sd, epsilon_sd)
+
+
+lmm_data <- standardize_data(data)
+
+lmm_data_processed <- preprocess_data_formula(Y ~ V1 + V2 + V3 + (1|gamma), lmm_data)
+# Fit linear mixed model
+lmm_test_data = cbind(Y=lmm_data_processed$Y, lmm_data_processed$X, gamma = lmm_data_processed$random$gamma)
+#lmm_test_data
+
+lmm_test_data = as.data.frame(lmm_test_data)
+
+lmm_model <- lmer(Y ~ V1 + V2 + V3 + (1|gamma), data = lmm_test_data)
+
+summary(lmm_model)
+#summary(lmm_model)$varcor
+#summary(lmm_model)$varcor$gamma[1]
+#summary(lmm_model)$sigma^2
+
+
+#test <- lm(Y ~ V1 + V2, data = lmm_test_data)
 ```
+
 ```{r}
-write.csv(results$lm_results, "lm_results.csv", row.names = TRUE)
-write.csv(results$lmm_results, "lmm_results.csv", row.names = TRUE)
-write.csv(results$inla_results, "inla_results.csv", row.names = TRUE)
-write.csv(results$decomp_lmg_results, "decomp_lmg_results.csv", row.names = TRUE)
-write.csv(results$decomp_rw_results, "decomp_rw_results.csv", row.names = TRUE)
+all_results$lmm_results
+rowSums(all_results$decomp_lmg_results[, c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma")])
+
+test_df = all_results$decomp_lmg_results
+
+test_df$Total_Variance <- rowSums(test_df[, c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma")])
+
+test_df
+
+
 ```
 
