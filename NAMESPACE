@@ -5,6 +5,9 @@ export(plot_posteriors)
 #export(extract_samples_info)
 #export(plot_summary_info)
 export(gelman_r2_metrics)
+export(preprocess_data_formula)
+export(SVD_decomp)
+export(standardize_data)
 
 # Imported functions
 importFrom(ggplot2, ggplot, geom_histogram, geom_density, geom_line, aes, theme_minimal, labs, theme, scale_fill_brewer)
