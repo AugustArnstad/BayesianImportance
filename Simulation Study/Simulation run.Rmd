@@ -316,7 +316,7 @@ mu <- c(1, 2, 3)  # Mean for the fixed effects
 covariance_levels <- c(0, 0.1, 0.5, 0.9)  # Covariance level for the design matrix
 gamma_sd <- 1  # Standard deviation for gamma
 epsilon_sd <- 1  # Standard deviation for epsilon
-num_simulations <- 5  # Number of times to run the simulation
+num_simulations <- 1000  # Number of times to run the simulation
 
 # Define other parameters as before...
 
@@ -330,16 +330,16 @@ all_results <- run_multiple_simulations(num_simulations, n, nclass_gamma, beta, 
 #all_decomp_lmg_results <- all_results$decomp_lmg_results
 #all_decomp_rw_results <- all_results$decomp_rw_results
 
-#write.csv(all_results$lm_results, "lm_results.csv", row.names = TRUE)
-#write.csv(all_results$lmm_results, "lmm_results.csv", row.names = TRUE)
-#write.csv(all_results$inla_results, "inla_results.csv", row.names = TRUE)
-#write.csv(all_results$decomp_lmg_results, "decomp_lmg_results.csv", row.names = TRUE)
-#write.csv(all_results$decomp_rw_results, "decomp_rw_results.csv", row.names = TRUE)
+write.csv(all_results$lm_results, "lm_results.csv", row.names = TRUE)
+write.csv(all_results$lmm_results, "lmm_results.csv", row.names = TRUE)
+write.csv(all_results$inla_results, "inla_results.csv", row.names = TRUE)
+write.csv(all_results$decomp_lmg_results, "decomp_lmg_results.csv", row.names = TRUE)
+write.csv(all_results$decomp_rw_results, "decomp_rw_results.csv", row.names = TRUE)
 
 ```
 
 ```{r}
-all_results$lmm_results
+all_results
 #all_lmm_results
 #all_inla_results
 #all_decomp_lmg_results
