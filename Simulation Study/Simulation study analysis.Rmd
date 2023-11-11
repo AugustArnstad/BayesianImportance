@@ -255,6 +255,7 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
   theme(legend.position = "bottom") +  # Adjust legend position as needed
   facet_wrap(~Method) +  # Separate plots by Method 
   geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
+
 ```
 
 
