@@ -71,15 +71,7 @@ inla_results <- read_csv("inla_results.csv")
 decomp_lmg_results <- read_csv("decomp_lmg_results.csv")
 decomp_rw_results <- read_csv("decomp_rw_results.csv")
 
-# Rename the INLA columns to match the others
-# inla_results <- inla_results %>%
-#   rename(
-#     Variance_V1 = Posterior_Variance_V1,
-#     Variance_V2 = Posterior_Variance_V2,
-#     Variance_V3 = Posterior_Variance_V3,
-#     Variance_gamma = Variance_gamma,
-#     Variance_epsilon = Variance_epsilon
-#   )
+
 ```
 
 
@@ -92,7 +84,7 @@ make_long <- function(data) {
 }
 
 # Apply the function to make data long format
-#lmm_results_long_data <- make_long(lmm_results)
+lmm_results_long_data <- make_long(lmm_results)
 lm_results_long_data <- make_long(lm_results)
 inla_results_long_data <- make_long(inla_results)
 decomp_lmg_results_long_data <- make_long(decomp_lmg_results)
@@ -117,14 +109,14 @@ create_summary_tables <- function(effect) {
   summary_tables <- list()
   
   for (cov_level in covariance_levels) {
-    #lmm_summary <- calculate_summary(lmm_results_long_data, effect, cov_level) %>% mutate(Method = "LMM")
+    lmm_summary <- calculate_summary(lmm_results_long_data, effect, cov_level) %>% mutate(Method = "LMM")
     lm_summary <- calculate_summary(lm_results_long_data, effect, cov_level) %>% mutate(Method = "LM")
     inla_summary <- calculate_summary(inla_results_long_data, effect, cov_level) %>% mutate(Method = "INLA")
     decomp_lmg_summary <- calculate_summary(decomp_lmg_results_long_data, effect, cov_level) %>% mutate(Method = "Decomp_LMG")
     decomp_rw_summary <- calculate_summary(decomp_rw_results_long_data, effect, cov_level) %>% mutate(Method = "Decomp_RW")
     
     summary_tables[[as.character(cov_level)]] <- bind_rows(
-      #lmm_summary,
+      lmm_summary,
       lm_summary,
       inla_summary,
       decomp_lmg_summary,
@@ -152,7 +144,7 @@ for (effect in effects) {
 
 ```{r}
 
-#lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
+lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
 lm_results_long <- pivot_longer(lm_results, cols = starts_with("Variance"))
 inla_results_long <- pivot_longer(inla_results, cols = starts_with("Variance"))
 decomp_lmg_results_long <- pivot_longer(decomp_lmg_results, cols = starts_with("Variance"))
@@ -162,7 +154,7 @@ theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8,
 # Combine all datasets into one with a 'Method' column
 combined_results_long <- bind_rows(
   mutate(lm_results_long, Method = 'LM'),
-  #mutate(lmm_results_long, Method = 'LMM'),
+  mutate(lmm_results_long, Method = 'LMM'),
   mutate(inla_results_long, Method = 'INLA'),
   mutate(decomp_lmg_results_long, Method = 'Decomp_LMG'), 
   mutate(decomp_rw_results_long, Method = 'Decomp_RW')
@@ -234,11 +226,11 @@ for (i in 1:length(rho_values)) {
 
 
 data_for_marginal_variance <- combined_results_long %>% 
-  filter(name == "Variance_total_marginal") %>%
+  filter(name == "Variance_total_marginal", Method!="LMM") %>%
   mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
 
 data_for_conditional_variance <- combined_results_long %>% 
-  filter(name == "Variance_total_conditional") %>%
+  filter(name == "Variance_total_conditional", Method!="LMM") %>%
   mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
 
 
@@ -263,9 +255,6 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
   theme(legend.position = "bottom") +  # Adjust legend position as needed
   facet_wrap(~Method) +  # Separate plots by Method 
   geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
-
-conditional_variance_plot
-
 ```
 
 
@@ -301,25 +290,25 @@ if (!dir.exists(output_folder_table)) {
 
 # Save tables for Variance_V1
 for (cov_level in names(all_summary_tables$Variance_V1)) {
-  latex_table <- xtable(all_summary_tables$Variance_V1[[cov_level]], include.rownames = FALSE, digits=5)
+  latex_table <- xtable(all_summary_tables$Variance_V1[[cov_level]], include.rownames = FALSE, digits=6)
   file_name <- file.path(output_folder_table, paste("Variance_V1_summary_cov_", cov_level, ".tex", sep = ""))
   print(latex_table, file = file_name, include.rownames = FALSE)
 }
 # Save tables for Variance_V2
 for (cov_level in names(all_summary_tables$Variance_V2)) {
-  latex_table <- xtable(all_summary_tables$Variance_V2[[cov_level]], include.rownames = FALSE, digits=5)
+  latex_table <- xtable(all_summary_tables$Variance_V2[[cov_level]], include.rownames = FALSE, digits=6)
   file_name <- file.path(output_folder_table, paste("Variance_V2_summary_cov_", cov_level, ".tex", sep = ""))
   print(latex_table, file = file_name, include.rownames = FALSE)
 }
 # Save tables for Variance_V3
 for (cov_level in names(all_summary_tables$Variance_V3)) {
-  latex_table <- xtable(all_summary_tables$Variance_V3[[cov_level]], include.rownames = FALSE, digits=5)
+  latex_table <- xtable(all_summary_tables$Variance_V3[[cov_level]], include.rownames = FALSE, digits=6)
   file_name <- file.path(output_folder_table, paste("Variance_V3_summary_cov_", cov_level, ".tex", sep = ""))
   print(latex_table, file = file_name, include.rownames = FALSE)
 }
 # Save tables for Variance_gamma
 for (cov_level in names(all_summary_tables$Variance_gamma)) {
-  latex_table <- xtable(all_summary_tables$Variance_gamma[[cov_level]], include.rownames = FALSE, digits=5)
+  latex_table <- xtable(all_summary_tables$Variance_gamma[[cov_level]], include.rownames = FALSE, digits=6)
   file_name <- file.path(output_folder_table, paste("Variance_gamma_summary_cov_", cov_level, ".tex", sep = ""))
   print(latex_table, file = file_name, include.rownames = FALSE)
 }
