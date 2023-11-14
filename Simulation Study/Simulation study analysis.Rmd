@@ -153,7 +153,7 @@ theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8,
 combined_results_long <- bind_rows(
   mutate(lm_results_long, Method = 'LM'),
   #mutate(lmm_results_long, Method = 'LMM'),
-  mutate(inla_results_long, Method = 'BI'),
+  mutate(inla_results_long, Method = 'BVI'),
   mutate(decomp_lmg_results_long, Method = 'ELMG'), 
   mutate(decomp_rw_results_long, Method = 'ERW')
 )
