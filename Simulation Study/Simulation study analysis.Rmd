@@ -70,8 +70,6 @@ lm_results <- read_csv("lm_results.csv")
 inla_results <- read_csv("inla_results.csv")
 decomp_lmg_results <- read_csv("decomp_lmg_results.csv")
 decomp_rw_results <- read_csv("decomp_rw_results.csv")
-
-
 ```
 
 
@@ -144,7 +142,7 @@ for (effect in effects) {
 
 ```{r}
 
-lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
+#lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
 lm_results_long <- pivot_longer(lm_results, cols = starts_with("Variance"))
 inla_results_long <- pivot_longer(inla_results, cols = starts_with("Variance"))
 decomp_lmg_results_long <- pivot_longer(decomp_lmg_results, cols = starts_with("Variance"))
@@ -154,14 +152,24 @@ theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8,
 # Combine all datasets into one with a 'Method' column
 combined_results_long <- bind_rows(
   mutate(lm_results_long, Method = 'LM'),
-  mutate(lmm_results_long, Method = 'LMM'),
-  mutate(inla_results_long, Method = 'INLA'),
-  mutate(decomp_lmg_results_long, Method = 'Decomp_LMG'), 
-  mutate(decomp_rw_results_long, Method = 'Decomp_RW')
+  #mutate(lmm_results_long, Method = 'LMM'),
+  mutate(inla_results_long, Method = 'BI'),
+  mutate(decomp_lmg_results_long, Method = 'ELMG'), 
+  mutate(decomp_rw_results_long, Method = 'ERW')
 )
 
 # Create a list to store plots for each effect
 effect_plots <- list()
+
+i=0
+effect_names = c(expression(beta[1]^2),
+                 expression(beta[2]^2),
+                 expression(beta[3]^2),
+                 expression(sigma[alpha]^2),
+                 expression(sigma[epsilon]^2))
+
+y_lower = c(0.1, 0.2, 0.2, 0, 0)
+y_upper = c(0.3, 0.4, 0.4, 0.2, 0.2)
 
 # Loop through each effect
 for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", "Variance_epsilon")) {
@@ -170,18 +178,20 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
     filter(name == effect) %>%
     mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
   
+  i=i+1
+  
   
   # Create the violin plot for the current effect
   p <- ggplot(data_for_plot, aes(x = Covariance, y = value, fill = Method)) +
     geom_violin(trim = FALSE) +
     geom_hline(yintercept = theoretical_values[[effect]], linetype = "dashed", color = "black") +
-    labs(title = paste("Results for", effect),
-         y = "Variance",
+    labs(title = effect_names[i],
+         y = "Relative importance",
          x = "Covariance Level") +
     theme_minimal() +
-    theme(legend.position = "bottom") +  # Adjust legend position as needed
-    facet_wrap(~Method)  # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
-
+    theme(legend.position = "right") +  # Adjust legend position as needed
+    facet_wrap(~Method) +  # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
+    scale_y_continuous(limits = c(y_lower[i], y_upper[i])) 
   
   # Add the plot to the list
   effect_plots[[effect]] <- p
@@ -243,6 +253,7 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
   theme_minimal() +
   theme(legend.position = "bottom") +  # Adjust legend position as needed
   facet_wrap(~Method) +  # Separate plots by Method 
+  scale_y_continuous(limits = c(0.7, 1)) +
   geom_hline(data = variance_explained, aes(yintercept = R2_marginal, color = ), linetype = "dashed") 
 
 
@@ -254,6 +265,7 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
   theme_minimal() +
   theme(legend.position = "bottom") +  # Adjust legend position as needed
   facet_wrap(~Method) +  # Separate plots by Method 
+  scale_y_continuous(limits = c(0.7, 1)) +
   geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
 
 ```
