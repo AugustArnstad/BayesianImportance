@@ -151,7 +151,7 @@ theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8,
 
 # Combine all datasets into one with a 'Method' column
 combined_results_long <- bind_rows(
-  mutate(lm_results_long, Method = 'LM'),
+  mutate(lm_results_long, Method = 'Relaimpo'),
   #mutate(lmm_results_long, Method = 'LMM'),
   mutate(inla_results_long, Method = 'BVI'),
   mutate(decomp_lmg_results_long, Method = 'ELMG'), 
@@ -189,7 +189,15 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
          y = "Relative importance",
          x = "Covariance Level") +
     theme_minimal() +
-    theme(legend.position = "right") +  # Adjust legend position as needed
+    theme(legend.position = "right", 
+          legend.text = element_text(size = 20), 
+          legend.title = element_text(size = 20),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          strip.text = element_text(size = 16),
+          axis.text.x = element_text(size = 16),
+          axis.text.y = element_text(size = 16)) +  # Adjust legend position as needed
     facet_wrap(~Method) +  # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
     scale_y_continuous(limits = c(y_lower[i], y_upper[i])) 
   
@@ -251,7 +259,15 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         y = "Variance",
         x = "Covariance Level") +
   theme_minimal() +
-  theme(legend.position = "bottom") +  # Adjust legend position as needed
+  theme(legend.position = "right", 
+        legend.text = element_text(size = 20), 
+        legend.title = element_text(size = 20),
+        plot.title = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16)) +
   facet_wrap(~Method) +  # Separate plots by Method 
   scale_y_continuous(limits = c(0.7, 1)) +
   geom_hline(data = variance_explained, aes(yintercept = R2_marginal, color = ), linetype = "dashed") 
@@ -263,7 +279,15 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         y = "Variance",
         x = "Covariance Level") +
   theme_minimal() +
-  theme(legend.position = "bottom") +  # Adjust legend position as needed
+  theme(legend.position = "right", 
+        legend.text = element_text(size = 20), 
+        legend.title = element_text(size = 20),
+        plot.title = element_text(size = 20, face = "bold"),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16)) +
   facet_wrap(~Method) +  # Separate plots by Method 
   scale_y_continuous(limits = c(0.7, 1)) +
   geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 

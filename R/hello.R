@@ -311,6 +311,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   # Extract names
   random_effect_names <- names(model$marginals.hyperpar)
   fixed_effect_names <- names(model$marginals.fixed)
+  random_effect_names <- gsub("Precision for ", "Variance of ", random_effect_names)
 
   # Get posterior means for random effects and fixed effects
   random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x, silent=TRUE)$mean)
