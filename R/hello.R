@@ -316,7 +316,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
                                     expression(beta[2]^2),
                                     expression(beta[3]^2))
 
-
+  expression('(Posterior mean' ~ mu[3] * phi)
 
   # Get posterior means for random effects and fixed effects
   random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x, silent=TRUE)$mean)
@@ -328,8 +328,8 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   #fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)
 
   # Rename with mean values for the legend
-  random_effect_names <- paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")")
-  fixed_effect_names <- paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")")
+  random_effect_names <- expression(paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")"))
+  fixed_effect_names <- expression(paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")"))
 
   # Create data frames
   df_list <- lapply(1:length(variance_marginals_list), function(i) {
