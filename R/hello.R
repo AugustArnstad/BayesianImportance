@@ -329,9 +329,9 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   random_effect_names <- c(expression(paste(sigma[epsilon]^2, " (Posterior Mean:", round(random_means, 3)[1], ")")),
                            expression(paste(sigma[alpha]^2, " (Posterior Mean:", round(random_means, 3)[2], ")")))
 
-  fixed_effect_names <- c(expression(paste(beta[1]^2, " (Posterior Mean:", round(fixed_means, 3)[1], ")")),
-                          expression(paste(beta[2]^2, " (Posterior Mean:", round(fixed_means, 3)[2], ")")),
-                          expression(paste(beta[3]^2, " (Posterior Mean:", round(fixed_means, 3)[3], ")")))
+  fixed_effect_names <- c(expression(paste(beta[1]^2, " (Posterior Mean:", round(fixed_means, 3)[2], ")")),
+                          expression(paste(beta[2]^2, " (Posterior Mean:", round(fixed_means, 3)[3], ")")),
+                          expression(paste(beta[3]^2, " (Posterior Mean:", round(fixed_means, 3)[4], ")")))
 
 
   # Create data frames
