@@ -309,8 +309,8 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   fixed_marginals_list <- lapply(model$marginals.fixed, function(x) x)
 
   # Extract names
-  #random_effect_names <- names(model$marginals.hyperpar)
-  #fixed_effect_names <- names(model$marginals.fixed)
+  random_effect_names <- names(model$marginals.hyperpar)
+  fixed_effect_names <- names(model$marginals.fixed)
 
   # Get posterior means for random effects and fixed effects
   random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x, silent=TRUE)$mean)
@@ -323,15 +323,15 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
 
 
   # Rename with mean values for the legend
-  #random_effect_names <- paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")")
-  #fixed_effect_names <- paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")")
+  random_effect_names <- paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")")
+  fixed_effect_names <- paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")")
 
-  random_effect_names <- c(expression(sigma[epsilon]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[1] ~ ")"),
-                           expression(sigma[alpha]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[2] ~ ")"))
-
-  fixed_effect_names <- c(expression(beta[1]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[2] ~ ")"),
-                          expression(beta[2]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[3] ~ ")"),
-                          expression(beta[3]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[4] ~ ")"))
+  # random_effect_names <- c(expression(sigma[epsilon]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[1] ~ ")"),
+  #                          expression(sigma[alpha]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[2] ~ ")"))
+  #
+  # fixed_effect_names <- c(expression(beta[1]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[2] ~ ")"),
+  #                         expression(beta[2]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[3] ~ ")"),
+  #                         expression(beta[3]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[4] ~ ")"))
 
 
   # Create data frames
