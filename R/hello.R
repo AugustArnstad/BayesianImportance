@@ -356,9 +356,9 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   df_combined <- do.call(rbind, c(df_list, df_list_fixed))
 
   if (!importance){
-    plot_title = paste("Posterior distributions of:", modelname)
+    plot_title = paste("Posterior distributions")
   }else{
-    plot_title = paste("Posterior proportion of variance of:", modelname)
+    plot_title = paste("Posterior proportion of variance")
   }
 
   # Plot using ggplot
@@ -366,6 +366,15 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
     geom_line() +
     labs(title = plot_title, x = "Values", y = "Density") +
     theme_minimal() +
+    theme(legend.position = "right",
+          legend.text = element_text(size = 12),
+          legend.title = element_text(size = 12),
+          plot.title = element_text(size = 16, face = "bold"),
+          axis.title.x = element_text(size = 14),
+          axis.title.y = element_text(size = 14),
+          strip.text = element_text(size = 14),
+          axis.text.x = element_text(size = 12),
+          axis.text.y = element_text(size = 12)) +
     scale_color_manual(values = rainbow(length(df_list) + length(df_list_fixed)))
     #geom_vline(aes(xintercept = 1/6), linetype = "dashed", color = "black") +    #This is true importance for beta_1, gamma, eta, epsilon
     #geom_vline(aes(xintercept = 2/6), linetype = "dashed", color = "black")      #This is true importance for beta_2
