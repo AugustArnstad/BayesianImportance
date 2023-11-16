@@ -309,6 +309,7 @@ run_multiple_simulations <- function(num_simulations, n, nclass_gamma, beta, mu,
 
 ```{r}
 # Example usage:
+set.seed(1234)
 n <- 10000
 nclass_gamma <- 200
 beta <- c(1, 1, sqrt(2), sqrt(3))  # Beta coefficients for the fixed effects
