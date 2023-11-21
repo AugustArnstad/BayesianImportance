@@ -201,11 +201,11 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
           legend.text = element_text(size = 20), 
           legend.title = element_text(size = 20),
           plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 16),
-          axis.title.y = element_text(size = 16),
-          strip.text = element_text(size = 16),
-          axis.text.x = element_text(size = 16),
-          axis.text.y = element_text(size = 16)) +  # Adjust legend position as needed
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_text(size = 20),
+          strip.text = element_text(size = 20),
+          axis.text.x = element_text(size = 20),
+          axis.text.y = element_text(size = 20)) +  # Adjust legend position as needed
     facet_wrap(~Method) #+  # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
     #scale_y_continuous(limits = c(y_lower[i], y_upper[i])) 
   
@@ -273,11 +273,11 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         legend.text = element_text(size = 20), 
         legend.title = element_text(size = 20),
         plot.title = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        strip.text = element_text(size = 16),
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16)) +
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        strip.text = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20)) +
   facet_wrap(~Method) +  # Separate plots by Method 
   #scale_y_continuous(limits = c(0.7, 1)) +
   geom_hline(data = variance_explained, aes(yintercept = R2_marginal, color = ), linetype = "dashed")
@@ -294,11 +294,11 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         legend.text = element_text(size = 20), 
         legend.title = element_text(size = 20),
         plot.title = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        strip.text = element_text(size = 16),
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16)) +
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        strip.text = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20)) +
   facet_wrap(~Method) +  # Separate plots by Method 
   #scale_y_continuous(limits = c(0.7, 1)) +
   geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
@@ -313,14 +313,14 @@ all_summary_tables
 
 #The INLA value is the posterior mean of the fixed effect
 
-#effect_plots[["Variance_V1"]]
-#effect_plots[["Variance_V2"]]
-#effect_plots[["Variance_V3"]]
-#effect_plots[["Variance_gamma"]]
-#effect_plots[["Variance_epsilon"]]
+effect_plots[["Variance_V1"]]
+effect_plots[["Variance_V2"]]
+effect_plots[["Variance_V3"]]
+effect_plots[["Variance_gamma"]]
+effect_plots[["Variance_epsilon"]]
 
-#marginal_variance_plot
-#conditional_variance_plot
+marginal_variance_plot
+conditional_variance_plot
 ```
 
 
@@ -330,7 +330,7 @@ The files are stored in the working directory. You can change the working direct
 ```{r, eval=FALSE}
 
 # Define the folder where you want to save the tables
-output_folder_table <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester 9/Prosjekt/Latex/Thesis template NTNU/Tables"
+output_folder_table <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Tables"
 
 # Create the folder if it doesn't exist
 if (!dir.exists(output_folder_table)) {
@@ -366,7 +366,7 @@ for (cov_level in names(all_summary_tables$Variance_gamma)) {
 
 ```{r, eval=FALSE}
 # Define the folder where you want to save the plots
-output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester 9/Prosjekt/Latex/Thesis template NTNU/Figures/ViolinPlots"
+output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Figures/ViolinPlots"
 
 # Create the folder if it doesn't exist
 if (!dir.exists(output_folder_plots)) {

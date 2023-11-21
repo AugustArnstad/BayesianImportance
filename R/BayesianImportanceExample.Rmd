@@ -220,7 +220,7 @@ test$posterior_plot
 
 
 ```{r, Eeval=FALSE, echo=FALSE}
-# output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester 9/Prosjekt/Latex/Thesis template NTNU/Figures/Posterior Marginal"
+# output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Figures/Posterior Marginal"
 # 
 # # Create the folder if it doesn't exist
 # if (!dir.exists(output_folder_plots)) {
