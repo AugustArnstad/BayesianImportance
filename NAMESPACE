@@ -1,9 +1,7 @@
 # Exported functions
 export(run_bayesian_imp)
 export(plot_posteriors)
-#export(summary_importances)
-#export(extract_samples_info)
-#export(plot_summary_info)
+export(sample_posteriors)
 export(gelman_r2_metrics)
 export(preprocess_data_formula)
 export(SVD_decomp)
