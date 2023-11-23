@@ -64,18 +64,22 @@ library(xtable)
 ## RETRIEVE DATA
 
 ```{r}
+set.seed(1234)
 # Remember to change directory to where files are stored
 #lmm_results <- read_csv("lmm_results.csv")
 lm_results <- read_csv("lm_results.csv")
 inla_results <- read_csv("inla_results.csv")
 decomp_lmg_results <- read_csv("decomp_lmg_results.csv")
 decomp_rw_results <- read_csv("decomp_rw_results.csv")
+
+inla_results
 ```
 
 
 ## SUMMARIZE DATA FOR COMPARISON
 
 ```{r}
+set.seed(1234)
 # Function to make data long format
 make_long <- function(data) {
   pivot_longer(data, cols = starts_with("Variance"), names_to = "Variable", values_to = "Value")
@@ -141,7 +145,7 @@ for (effect in effects) {
 ## VIOLIN PLOTS
 
 ```{r}
-
+set.seed(1234)
 #lmm_results_long <- pivot_longer(lmm_results, cols = starts_with("Variance"))
 lm_results_long <- pivot_longer(lm_results, cols = starts_with("Variance"))
 inla_results_long <- pivot_longer(inla_results, cols = starts_with("Variance"))
@@ -217,6 +221,7 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
 
 ## Theoretical explained variance
 ```{r}
+set.seed(1234)
 # Model parameters
 beta <- c(1, sqrt(2), sqrt(3))
 vi <- rep(1, length(beta))  # Assuming v_i = 1 for all i
@@ -237,8 +242,12 @@ for (i in 1:length(rho_values)) {
   rho <- rho_values[i]
   
   # Calculate Var(Y) for the current rho
-  var_Y <- sum((beta^2) * vi) + sum(beta[1] * beta[2] * sqrt(vi[1] * vi[2]) * rho) + sigma_gamma_sq + sigma_epsilon_sq
-  cat(var_Y)
+  var_Y <- (sum((beta^2)) + 
+                2*(beta[1] * beta[2] * rho
+               + beta[1] * beta[3] * rho
+               + beta[3] * beta[2] * rho)
+               + sigma_gamma_sq + sigma_epsilon_sq)
+  #cat(var_Y)
   
   # Calculate conditional R-squared
   R2_conditional <- (var_Y - sigma_epsilon_sq) / var_Y
@@ -306,9 +315,35 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
 
 ```
 
+```{r}
+set.seed(1234)
+rho <- 0.9 #rho_values[i]
+
+# Calculate Var(Y) for the current rho
+var_Y <- (sum((beta^2)) + 
+              2*(beta[1] * beta[2] * rho
+             + beta[1] * beta[3] * rho
+             + beta[3] * beta[2] * rho)
+             + sigma_gamma_sq + sigma_epsilon_sq)
+#cat(var_Y)
+
+# Calculate conditional R-squared
+R2_conditional <- (var_Y - sigma_epsilon_sq) / var_Y
+
+# Calculate marginal R-squared
+R2_marginal <- (var_Y - sigma_epsilon_sq - sigma_gamma_sq) / var_Y
+
+#variance_explained[i, "R2_conditional"] <- R2_conditional
+#variance_explained[i, "R2_marginal"] <- R2_marginal
+#var_Y
+R2_conditional
+#7/8
+```
+
 
 ## RESULTS
 ```{r}
+set.seed(1234)
 all_summary_tables
 
 #The INLA value is the posterior mean of the fixed effect

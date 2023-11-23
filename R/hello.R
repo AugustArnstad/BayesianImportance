@@ -302,7 +302,7 @@ run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, return_samp
 #' model_results <- run_bayesian_imp(data, Y ~ V1 + V2)
 #' plot_model <- plot_posteriors(model_results)
 #' plot_model
-#'
+
 plot_posteriors <- function(model, importance=FALSE, modelname="model") {
   # Get the marginals
   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
@@ -389,6 +389,89 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
     #geom_vline(aes(xintercept = 1/6), linetype = "dashed", color = "black") +    #This is true importance for beta_1, gamma, eta, epsilon
     #geom_vline(aes(xintercept = 2/6), linetype = "dashed", color = "black")      #This is true importance for beta_2
   return(list(posterior_marginals = df_combined, posterior_plot = p))
+}
+
+#' Sample Posterior Distributions for Bayesian Models
+#'
+#' This function samples posterior distributions from a Bayesian model, calculates
+#' the importance of each variable, and provides variance marginals for the random effects.
+#' It uses a provided Bayesian model formula and data to generate these samples.
+#'
+#' @param formula An object of class `formula` (or one that can be coerced to that class):
+#'                a symbolic description of the model to be fitted.
+#' @param data A data frame containing the variables in the model.
+#' @param n_samp The number of samples to be drawn from the posterior distribution.
+#' @param n The number of observations in the data.
+#' @param n_classes The number of classes in the model (applicable for classification problems).
+#'
+#' @return A list containing three elements:
+#'         \itemize{
+#'           \item \code{beta}: A matrix of sampled beta coefficients for the fixed effects.
+#'           \item \code{importance}: A matrix of importance values for each variable.
+#'           \item \code{marginals}: A list of data frames, each containing the x and y
+#'                                  values for the variance marginals of the random effects.
+#'         }
+#'
+#' @examples
+#' # Define the model formula
+#' formula <- Y ~ V2 + V3 + V4 + (1 | gamma)
+#'
+#' # Specify the data frame and other parameters
+#' data_bayes <- my_data_frame # Replace with your data frame
+#' n_samp <- 100
+#' n <- nrow(data_bayes)
+#' n_classes <- 3 # Set as appropriate
+#'
+#' # Run the function
+#' results <- sample_posteriors(formula, data_bayes, n_samp, n, n_classes)
+#'
+#' @export
+sample_posteriors <- function(formula, data, n_samp, n, n_classes){
+
+  model <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes)
+
+  formula_str = deparse(formula)
+  split_formula <- strsplit(formula_str, "~")[[1]][2]
+  fixed_effects_str <- ifelse(grepl("\\(", split_formula), strsplit(split_formula, "\\(")[[1]][1], split_formula)
+  fixed_effects_str <- trimws(fixed_effects_str)
+  fixed_effects_str <- gsub("\\+\\s*$", "", fixed_effects_str)
+  fixed_effect_vars <- unlist(strsplit(fixed_effects_str, "\\s*\\+\\s*"))
+  fixed_effects <- trimws(fixed_effect_vars)
+
+  X = data[fixed_effects]
+
+  beta_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
+  importance_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
+
+  SVD = BayesianImportance::SVD_decomp(X)
+
+  lambda = SVD$lambda
+
+  samps_Z <- inla.posterior.sample(model, n = n_samp)
+
+  print(samps_Z[[1]]$latent[n])
+
+  num_fixed <- ncol(X)
+
+  for (i in 1:n_samp){
+    beta <- samps_Z[[i]]$latent[(n + n_classes + 2):(n + n_classes + num_fixed + 1)]
+    beta_mat[i, ] <- beta
+    importance_mat[i, ] <- lambda^2 %*% beta^2
+  }
+
+  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+  random_effect_names <- names(model$marginals.hyperpar)
+
+
+  df_list <- lapply(1:length(variance_marginals_list), function(i) {
+    data.frame(
+      x = variance_marginals_list[[i]][, 1],
+      y = variance_marginals_list[[i]][, 2],
+      Effect = random_effect_names[i]
+    )
+  })
+
+  return(list(beta = beta_mat, importance=importance_mat, marginals = df_list))
 }
 
 
