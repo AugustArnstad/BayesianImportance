@@ -428,7 +428,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
 #' @export
 sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
-  model <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data=data)
+  model <- run_bayesian_imp(formula, data=data)
 
   formula_str = deparse(formula)
   split_formula <- strsplit(formula_str, "~")[[1]][2]
