@@ -449,8 +449,6 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   samps_Z <- inla.posterior.sample(model, n = n_samp)
 
-  print(samps_Z[[1]]$latent[n])
-
   num_fixed <- ncol(X)
 
   for (i in 1:n_samp){
