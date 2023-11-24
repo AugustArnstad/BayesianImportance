@@ -63,22 +63,12 @@ eta <- rep(rnorm(nclass_eta, 0, sqrt(1)), each=n/nclass_eta)
 epsilon = rnorm(n, mean=0, sd=sqrt(1))
 
 #Define some formula
-Y<-  1 + 1*X[, 1] + sqrt(2)*X[, 2] + sqrt(3)*X[, 3] + gamma + epsilon # + eta
+Y<-  1 + 1*X[, 1] + sqrt(2)*X[, 2] + sqrt(3)*X[, 3] + gamma + eta + epsilon 
 
 #Collect as a dataframe
 data_bayes = data.frame(cbind(Y, X = X))
 data_bayes = data.frame(cbind(data_bayes, gamma=gamma)) 
-#data_bayes = data.frame(cbind(data_bayes, eta=eta))
-```
-
-```{r}
-test = BayesianImportance::SVD_decomp(X)
-
-test$lambda
-```
-
-```{r}
-(test$lambda)^2 %*% (model$summary.fixed$mean[2:4])^2
+data_bayes = data.frame(cbind(data_bayes, eta=eta))
 ```
 
 
@@ -93,7 +83,7 @@ relaimpo::calc.relimp(test)
 ## USAGE
 ```{r}
 set.seed(1234)
-model <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes)
+model <- run_bayesian_imp(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes)
 ```
 
 ```{r}
@@ -108,6 +98,11 @@ plot_model$posterior_plot
 ```
 
 ```{r}
+sampled_posteriors = BayesianImportance::sample_posteriors(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes, n_samp=5000, n, nclass = (200 + 100))
+```
+
+
+```{r}
 gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
 gelman_r2$plot
 summary(gelman_r2$conditional_gelman_r2)
@@ -120,112 +115,112 @@ rmarkdown::render(input = "BayesianImportanceExample.Rmd", output_format = "pdf_
 
 ```{r, eval=FALSE, echo=FALSE}
 
-plot_posteriors_modified <- function(model, importance=FALSE, modelname="model") {
-  # Get the marginals
-  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-  fixed_marginals_list <- lapply(model$marginals.fixed, function(x) x)
-
-  # Extract names
-  random_effect_names <- names(model$marginals.hyperpar)
-  fixed_effect_names <- names(model$marginals.fixed)
-
-  # Get posterior means for random effects and fixed effects
-  random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x, silent=TRUE)$mean)
-  if (!importance){
-    fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x, silent=TRUE)$mean)
-  }else{
-    fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x, silent=TRUE)$mean)^2
-  }
-  #fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)
-
-
-  # Rename with mean values for the legend
-  random_effect_names <- paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")")
-  fixed_effect_names <- paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")")
-  print(fixed_means)
-  print(random_means)
-  
-  
-  # error_name = expression(sigma[epsilon]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[1] ~ ")")
-  # gamma_name = expression(sigma[alpha]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[1] ~ ")")
-  # 
-  # beta_1_name <- expression(beta[1]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[2] ~ ")")
-  # beta_2_name <- expression(beta[2]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[3] ~ ")")
-  # beta_3_name <- expression(beta[3]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[4] ~ ")")
-  # 
-  # fixed_effect_names = c(beta_1_name, beta_2_name, beta_3_name)
-  # 
-  # random_effect_names = c(gamma_name, error_name)
-
-  # Create data frames
-  df_list <- lapply(1:length(variance_marginals_list), function(i) {
-    data.frame(
-      x = variance_marginals_list[[i]][, 1],
-      y = variance_marginals_list[[i]][, 2],
-      Effect = random_effect_names[i],
-      PosteriorMean = round(random_means[i], 3)
-    )
-  })
-
-  if (!importance){
-    df_list_fixed <- lapply(1:length(fixed_marginals_list), function(i) {
-      data.frame(
-        x = fixed_marginals_list[[i]][, 1],
-        y = fixed_marginals_list[[i]][, 2],
-        Effect = fixed_effect_names[i],
-        PosteriorMean = round(fixed_means[i], 3)
-      )
-    })
-  }else{
-    df_list_fixed <- lapply(1:length(fixed_marginals_list), function(i) {
-      data.frame(
-        x = fixed_marginals_list[[i]][, 1]^2,
-        y = fixed_marginals_list[[i]][, 2],
-        Effect = fixed_effect_names[i],
-        PosteriorMean = round(fixed_means[i], 3)^2
-      )
-    })
-  }
-
-  # Combine data frames
-  df_combined <- do.call(rbind, c(df_list, df_list_fixed))
-
-  if (!importance){
-    plot_title = paste("Posterior distributions")
-  }else{
-    plot_title = paste("Posterior proportion of variance")
-  }
-
-  # Plot using ggplot
-  p <- ggplot(df_combined, aes(x = x, y = y, color = Effect)) +
-    geom_line(linewidth=1.5) +
-    labs(title = plot_title, x = "Values", y = "Density") +
-    theme_minimal() +
-    theme(legend.position = "right",
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 16),
-          axis.title.y = element_text(size = 16),
-          strip.text = element_text(size = 16),
-          axis.text.x = element_text(size = 16),
-          axis.text.y = element_text(size = 16)) +
-    scale_color_manual(values = rainbow(6), 
-                       labels = c(expression(beta[0]^2 ~ 'Posterior mean=0.0000'),
-                                expression(sigma[alpha]^2 ~ 'Posterior mean=0.1296'),
-                                expression(paste(sigma[epsilon]^2) ~ 'Posterior mean=0.1294'),
-                                expression(beta[1]^2 ~ 'Posterior mean=0.1277'),
-                                expression(beta[2]^2 ~ 'Posterior mean=0.2521'),
-                                expression(beta[3]^2 ~ 'Posterior mean=0.3776'))) 
-
-    #geom_vline(aes(xintercept = 1/8), linetype = "dashed", color = "black") +    #This is true importance for beta_1, gamma, eta, epsilon
-    #geom_vline(aes(xintercept = 2/8), linetype = "dashed", color = "black") +     #This is true importance for beta_2
-    #geom_vline(aes(xintercept = 3/8), linetype = "dashed", color = "black")      #This is true importance for beta_3
-  return(list(posterior_marginals = df_combined, posterior_plot = p))
-}
-
-test <- plot_posteriors_modified(model, importance=TRUE)
-test$posterior_plot
+# plot_posteriors_modified <- function(model, importance=FALSE, modelname="model") {
+#   # Get the marginals
+#   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+#   fixed_marginals_list <- lapply(model$marginals.fixed, function(x) x)
+# 
+#   # Extract names
+#   random_effect_names <- names(model$marginals.hyperpar)
+#   fixed_effect_names <- names(model$marginals.fixed)
+# 
+#   # Get posterior means for random effects and fixed effects
+#   random_means <- 1/sapply(model$marginals.hyperpar, function(x) inla.zmarginal(x, silent=TRUE)$mean)
+#   if (!importance){
+#     fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x, silent=TRUE)$mean)
+#   }else{
+#     fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x, silent=TRUE)$mean)^2
+#   }
+#   #fixed_means <- sapply(model$marginals.fixed, function(x) inla.zmarginal(x)$mean)
+# 
+# 
+#   # Rename with mean values for the legend
+#   random_effect_names <- paste(random_effect_names, " (Posterior Mean:", round(random_means, 3), ")")
+#   fixed_effect_names <- paste(fixed_effect_names, " (Posterior Mean:", round(fixed_means, 3), ")")
+#   print(fixed_means)
+#   print(random_means)
+#   
+#   
+#   # error_name = expression(sigma[epsilon]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[1] ~ ")")
+#   # gamma_name = expression(sigma[alpha]^2 ~ " (Posterior Mean:" ~ round(random_means, 3)[1] ~ ")")
+#   # 
+#   # beta_1_name <- expression(beta[1]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[2] ~ ")")
+#   # beta_2_name <- expression(beta[2]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[3] ~ ")")
+#   # beta_3_name <- expression(beta[3]^2 ~ " (Posterior Mean:" ~ round(fixed_means, 3)[4] ~ ")")
+#   # 
+#   # fixed_effect_names = c(beta_1_name, beta_2_name, beta_3_name)
+#   # 
+#   # random_effect_names = c(gamma_name, error_name)
+# 
+#   # Create data frames
+#   df_list <- lapply(1:length(variance_marginals_list), function(i) {
+#     data.frame(
+#       x = variance_marginals_list[[i]][, 1],
+#       y = variance_marginals_list[[i]][, 2],
+#       Effect = random_effect_names[i],
+#       PosteriorMean = round(random_means[i], 3)
+#     )
+#   })
+# 
+#   if (!importance){
+#     df_list_fixed <- lapply(1:length(fixed_marginals_list), function(i) {
+#       data.frame(
+#         x = fixed_marginals_list[[i]][, 1],
+#         y = fixed_marginals_list[[i]][, 2],
+#         Effect = fixed_effect_names[i],
+#         PosteriorMean = round(fixed_means[i], 3)
+#       )
+#     })
+#   }else{
+#     df_list_fixed <- lapply(1:length(fixed_marginals_list), function(i) {
+#       data.frame(
+#         x = fixed_marginals_list[[i]][, 1]^2,
+#         y = fixed_marginals_list[[i]][, 2],
+#         Effect = fixed_effect_names[i],
+#         PosteriorMean = round(fixed_means[i], 3)^2
+#       )
+#     })
+#   }
+# 
+#   # Combine data frames
+#   df_combined <- do.call(rbind, c(df_list, df_list_fixed))
+# 
+#   if (!importance){
+#     plot_title = paste("Posterior distributions")
+#   }else{
+#     plot_title = paste("Posterior proportion of variance")
+#   }
+# 
+#   # Plot using ggplot
+#   p <- ggplot(df_combined, aes(x = x, y = y, color = Effect)) +
+#     geom_line(linewidth=1.5) +
+#     labs(title = plot_title, x = "Values", y = "Density") +
+#     theme_minimal() +
+#     theme(legend.position = "right",
+#           legend.text = element_text(size = 20),
+#           legend.title = element_text(size = 20),
+#           plot.title = element_text(size = 20, face = "bold"),
+#           axis.title.x = element_text(size = 16),
+#           axis.title.y = element_text(size = 16),
+#           strip.text = element_text(size = 16),
+#           axis.text.x = element_text(size = 16),
+#           axis.text.y = element_text(size = 16)) +
+#     scale_color_manual(values = rainbow(6), 
+#                        labels = c(expression(beta[0]^2 ~ 'Posterior mean=0.0000'),
+#                                 expression(sigma[alpha]^2 ~ 'Posterior mean=0.1296'),
+#                                 expression(paste(sigma[epsilon]^2) ~ 'Posterior mean=0.1294'),
+#                                 expression(beta[1]^2 ~ 'Posterior mean=0.1277'),
+#                                 expression(beta[2]^2 ~ 'Posterior mean=0.2521'),
+#                                 expression(beta[3]^2 ~ 'Posterior mean=0.3776'))) 
+# 
+#     #geom_vline(aes(xintercept = 1/8), linetype = "dashed", color = "black") +    #This is true importance for beta_1, gamma, eta, epsilon
+#     #geom_vline(aes(xintercept = 2/8), linetype = "dashed", color = "black") +     #This is true importance for beta_2
+#     #geom_vline(aes(xintercept = 3/8), linetype = "dashed", color = "black")      #This is true importance for beta_3
+#   return(list(posterior_marginals = df_combined, posterior_plot = p))
+# }
+# 
+# test <- plot_posteriors_modified(model, importance=TRUE)
+# test$posterior_plot
 ```
 
 
@@ -243,16 +238,3 @@ test$posterior_plot
 ```
 
 
-How do I set up the design matrix for the random effects $Z$?
-$$
-Y = X\beta + Z\gamma
-$$
-Need help with this!
-
-Am I right now just working with random intercepts? Is that what my gamma values truly represent?
-
-In the run_INLA function I run INLA on the Z matrix(SVD approximation of X). Is it correct to run INLA on Z? Right now I transform right before plotting/giving the summary, keeping the beta coefficients from Z before that, since that is the output of the INLA model.
-
-Struggling to make the priors work if they are not simply the default value. Now its just the basic version. This should probably be fixed as it is very limiting. In general I am a bit unsure if my script is efficient, as I have made it pretty quickly. Need a review of this. 
-
-In addition I need general comments on my package as there might be stuff missing that I am not aware of/could be improved. 

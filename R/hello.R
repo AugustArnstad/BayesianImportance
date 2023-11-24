@@ -238,28 +238,28 @@ run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, return_samp
   preprocessed_data$R <- svd_results$R
   preprocessed_data$lambda <- svd_results$lambda
 
-  bayesian_imp_env$context <- list()
-  bayesian_imp_env$context$lambda_matrix <- svd_results$lambda
-  bayesian_imp_env$context$data_raw <- data
-  bayesian_imp_env$context$formula <- formula
+  # bayesian_imp_env$context <- list()
+  # bayesian_imp_env$context$lambda_matrix <- svd_results$lambda
+  # bayesian_imp_env$context$data_raw <- data
+  # bayesian_imp_env$context$formula <- formula
 
   #Store the number of classes for all random effects.
   term_objects <- terms(formula)
   random_effects <- gsub(".*\\|", "", attr(term_objects, "term.labels")[grep("\\|", attr(term_objects, "term.labels"))])
   random_effects <- trimws(random_effects)
 
-  total_classes <- 0
-
-  if (length(random_effects) != 0){
-    for (random_effect in random_effects){
-      num_unique <- length(unique(data[[random_effect]]))
-      bayesian_imp_env$context$num_classes[[random_effect]] <- num_unique
-
-      # Update the total count
-      total_classes <- total_classes + num_unique
-    }
-  }
-  bayesian_imp_env$context$total_num_classes <- total_classes
+  # total_classes <- 0
+  #
+  # if (length(random_effects) != 0){
+  #   for (random_effect in random_effects){
+  #     num_unique <- length(unique(data[[random_effect]]))
+  #     bayesian_imp_env$context$num_classes[[random_effect]] <- num_unique
+  #
+  #     # Update the total count
+  #     total_classes <- total_classes + num_unique
+  #   }
+  # }
+  # bayesian_imp_env$context$total_num_classes <- total_classes
 
 
   # Run the INLA model
