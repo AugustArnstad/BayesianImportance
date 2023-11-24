@@ -9,6 +9,7 @@ This ia a package developed for my project thesis at NTNU. The project is a 15EC
 - **INLA Integration**: Leverages the computational advantages of INLA, a popular method for Bayesian inference for latent Gaussian models.
 - **Support for Various GLMMs**: Compatible with a wide range of generalized linear mixed models.
 - **Extensible**: Designed with the modern R user in mind, offering a range of utilities to further expand upon the base functionality.
+- **Priors**: As of right now it uses the default priors that INLA provides. Adding user specified priors is perhaps the most desirable extension.
 
 ## Installation
 To install the latest version of `BayesianImportance` from GitHub, use the following command:
