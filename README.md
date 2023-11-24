@@ -33,8 +33,8 @@ gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
 gelman_r2$plot
 summary(gelman_r2$conditional_gelman_r2)
 ```
-where all functions are found in the R folder.
-Detailed examples and tutorials will be made available in future releases.
+where all functions are found and documented in the R folder.
+A basic example of how one can fit and treat correlated predictors are found under the files posterior_sampling.Rmd and posterior_sampling.pdf
 
 ## Simulation study
 In the folder simulation study, we have four files, that contribute to a simulation study where the Bayesian Importance method is compared to other, frequentist and more established, methods in the field of mathematics. Simulation study preparation.Rmd and Simulation study.Rmd are drafts mostly made for how one should do the simulation study and can be viewed as redundant. Simulation run.Rmd contains the code that runs the simulation study and writes the results to the attached csv files. Simulation study analysis.Rmd contains analysis of the resulting files, which is done by violin plots and tables to compare the Bayesian Importance package with other methods that are established in the mathematical field.
