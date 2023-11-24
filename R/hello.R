@@ -212,12 +212,11 @@ run_INLA <- function(formula, data) {
 #' @param formula A formula specifying the model.
 #' @param ... Additional arguments.
 #'
-#' @return If return_samples is FALSE, returns the results of the INLA model.
-#'         If TRUE, returns a list containing the samples, the model results, and the lambda matrix.
+#' @return Returns the results of the INLA model.
 #'
 #' @examples
 #' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
-#' results <- run_bayesian_imp(data, Y ~ V1 + V2, n_samp=1000, return_samples=TRUE)
+#' results <- run_bayesian_imp(Y ~ V1 + V2, data, )
 #'
 run_bayesian_imp <- function(formula, data, ...) {
   require(INLA)
