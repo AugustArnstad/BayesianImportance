@@ -98,7 +98,7 @@ plot_model$posterior_plot
 ```
 
 ```{r}
-sampled_posteriors = BayesianImportance::sample_posteriors(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes, n_samp=5000, n, nclass = (200 + 100))
+sampled_posteriors = BayesianImportance::sample_posteriors(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes, n_samp=5000, n, n_classes = (200 + 100))
 ```
 
 

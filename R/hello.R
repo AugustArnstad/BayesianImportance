@@ -221,7 +221,7 @@ run_INLA <- function(formula, data) {
 #' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
 #' results <- run_bayesian_imp(data, Y ~ V1 + V2, n_samp=1000, return_samples=TRUE)
 #'
-run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, return_samples = FALSE, ...) {
+run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, ...) {
   require(INLA)
 
   # Standardize the data
@@ -265,17 +265,19 @@ run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, return_samp
   # Run the INLA model
   model_results <- run_INLA(formula, preprocessed_data)
 
-  # Check if the user wants the model as output
-  if (!return_samples) {
-    return(model_results)
-  }
-  else{
-    # Sample from the INLA model
-    model_samples <- sample_inla_model(model_results, n_samp)
+  return(model_results)
 
-    # Return the samples
-    return(list(samples = model_samples, model = model_results, lambda = bayesian_imp_env$context$lambda_matrix))
-  }
+  # Check if the user wants the model as output
+  # if (!return_samples) {
+  #   return(model_results)
+  # }
+  # else{
+  #   # Sample from the INLA model
+  #   model_samples <- sample_inla_model(model_results, n_samp)
+  #
+  #   # Return the samples
+  #   return(list(samples = model_samples, model = model_results, lambda = bayesian_imp_env$context$lambda_matrix))
+  # }
 }
 
 
