@@ -210,8 +210,6 @@ run_INLA <- function(formula, data) {
 #'
 #' @param data A data frame to be analyzed.
 #' @param formula A formula specifying the model.
-#' @param n_samp Number of samples to draw from the posterior. Default is 5000.
-#' @param return_samples If TRUE, returns samples from the posterior. Default is FALSE.
 #' @param ... Additional arguments.
 #'
 #' @return If return_samples is FALSE, returns the results of the INLA model.
@@ -221,7 +219,7 @@ run_INLA <- function(formula, data) {
 #' data <- data.frame(Y = rnorm(100), V1 = rnorm(100), V2 = rnorm(100))
 #' results <- run_bayesian_imp(data, Y ~ V1 + V2, n_samp=1000, return_samples=TRUE)
 #'
-run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, ...) {
+run_bayesian_imp <- function(formula, data, ...) {
   require(INLA)
 
   # Standardize the data
