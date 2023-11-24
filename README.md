@@ -25,13 +25,9 @@ To compute the Bayesian variable importance for your GLMMs, follow the basic str
 
 ```{r}
 set.seed(1234)
-model <- run_bayesian_imp(data_bayes, Y ~ V2 + V3 + (1 | gamma) + (1 | eta))
+model <- run_bayesian_imp(Y ~ V2 + V3 + (1 | gamma) + (1 | eta), data=data_bayes)
 
-plot_model = plot_posteriors(model, importance=FALSE)
-plot_model$posterior_plot
-
-plot_model = plot_posteriors(model, importance=TRUE)
-plot_model$posterior_plot
+posteriors <- sample_posteriors(Y ~ V2 + V3 + V4 + (1 | gamma) + (1 | eta), data=data_bayes, 5000, n, n_classes=200)
 
 gelman_r2 = gelman_r2_metrics(model, s=1000, plot=TRUE)
 gelman_r2$plot
