@@ -132,7 +132,7 @@ posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_baye
 ## PLOTTING
 This code block defines a function plot_posterior that visualizes posterior distributions and relative importance from the sampled posteriors. The function creates density plots and overlays line plots for variance marginals. This can be modified for the specific problem at hand, and is not included in the package since it is a problem specific function.
 ```{r}
-plot_posterior <- function(betas, importances, marginals, importance=FALSE) {
+plot_posterior <- function(betas, importances, marginals, importance=FALSE, theoretical=FALSE) {
   
   if (importance) {
     mat_long <- melt(as.data.frame(importances))
@@ -174,12 +174,22 @@ plot_posterior <- function(betas, importances, marginals, importance=FALSE) {
           strip.text = element_text(size = 20),
           axis.text.x = element_text(size = 20),
           axis.text.y = element_text(size = 20)) +
-    scale_fill_manual(name = "Fixed effects", values = colors[1:3], labels = fixed_effect_labels) +
-    scale_color_manual(name = "Random effects", values = colors[4:5], labels = random_effect_labels)
+    scale_fill_manual(name = "Fixed effects", 
+                      values = colors[1:3], 
+                      labels = fixed_effect_labels) +
+    scale_color_manual(name = "Random effects", 
+                       values = colors[4:5], 
+                       labels = random_effect_labels)
+    
+  if (theoretical) {
+    p <- p + geom_vline(xintercept = 0.125, color = "black", linetype = "dashed") +
+            geom_vline(xintercept = 0.25, color = "black", linetype = "dashed") +
+            geom_vline(xintercept = 0.375, color = "black", linetype = "dashed")
+  }
   return(p)
 }
 
-plot1 <- plot_posterior(posteriors1$beta, posteriors1$importance, posteriors1$marginals, importance = TRUE)
+plot1 <- plot_posterior(posteriors1$beta, posteriors1$importance, posteriors1$marginals, importance = TRUE, theoretical=TRUE)
 
 plot2 <- plot_posterior(posteriors2$beta, posteriors2$importance, posteriors2$marginals, importance = TRUE)
 
