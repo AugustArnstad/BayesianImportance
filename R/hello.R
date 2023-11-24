@@ -402,7 +402,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
 #' @param data A data frame containing the variables in the model.
 #' @param n_samp The number of samples to be drawn from the posterior distribution.
 #' @param n The number of observations in the data.
-#' @param n_classes The number of classes in the model (applicable for classification problems).
+#' @param n_classes The number of total classes for all random effects in the model.
 #'
 #' @return A list containing three elements:
 #'         \itemize{

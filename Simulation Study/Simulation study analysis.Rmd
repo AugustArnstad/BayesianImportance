@@ -72,7 +72,7 @@ inla_results <- read_csv("inla_results.csv")
 decomp_lmg_results <- read_csv("decomp_lmg_results.csv")
 decomp_rw_results <- read_csv("decomp_rw_results.csv")
 
-inla_results
+#inla_results
 ```
 
 
@@ -151,7 +151,8 @@ lm_results_long <- pivot_longer(lm_results, cols = starts_with("Variance"))
 inla_results_long <- pivot_longer(inla_results, cols = starts_with("Variance"))
 decomp_lmg_results_long <- pivot_longer(decomp_lmg_results, cols = starts_with("Variance"))
 decomp_rw_results_long <- pivot_longer(decomp_rw_results, cols = starts_with("Variance"))
-theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8, Variance_gamma = 1/8, Variance_epsilon=1/8)
+#theoretical_values <- c(Variance_V1 = 1/8, Variance_V2 = 2/8, Variance_V3 = 3/8, Variance_gamma = 1/8, Variance_epsilon=1/8)
+
 
 # Combine all datasets into one with a 'Method' column
 combined_results_long <- bind_rows(
@@ -192,11 +193,25 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
     y_label <- expression('Relative importance' ~ sigma[epsilon]^2)
   }
   
+  segment_width <- 1
+  
+  Cov_Num <- as.numeric(as.factor(0))
+
+  
+  if (effect=="Variance_V2"){
+    theor_val = 0.25
+  }else if(effect=="Variance_V3"){
+    theor_val = 0.375
+  }else{
+    theor_val = 0.125
+  }
+
+  
   
   # Create the violin plot for the current effect
   p <- ggplot(data_for_plot, aes(x = Covariance, y = value, fill = Method)) +
     geom_violin(trim = FALSE) +
-    geom_hline(yintercept = theoretical_values[[effect]], linetype = "dashed", color = "black") +
+    #geom_hline(yintercept = theoretical_values[[effect]], linetype = "dashed", color = "black") +
     labs(#title = effect_names[i],
          y = y_label,
          x = expression('Covariance Level' ~ rho)) +
@@ -210,14 +225,61 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
           strip.text = element_text(size = 20),
           axis.text.x = element_text(size = 20),
           axis.text.y = element_text(size = 20)) +  # Adjust legend position as needed
-    facet_wrap(~Method) #+  # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
+    facet_wrap(~Method) 
+    # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
+    
     #scale_y_continuous(limits = c(y_lower[i], y_upper[i])) 
   
   # Add the plot to the list
+  print(theor_val)
   effect_plots[[effect]] <- p
 }
 
+effect_plots$Variance_V1 =
+                        effect_plots$Variance_V1 +     
+                        geom_segment(aes(x = Cov_Num - segment_width/2, 
+                                          xend = Cov_Num + segment_width/2,
+                                          y = 0.125, 
+                                          yend = 0.125),
+                                          linetype = "dashed", color = "black", 
+                                          inherit.aes = FALSE) 
+
+effect_plots$Variance_V2 =
+                        effect_plots$Variance_V2 +     
+                        geom_segment(aes(x = Cov_Num - segment_width/2, 
+                                          xend = Cov_Num + segment_width/2,
+                                          y = 0.25, 
+                                          yend = 0.25),
+                                          linetype = "dashed", color = "black", 
+                                          inherit.aes = FALSE) 
+effect_plots$Variance_V3 =
+                        effect_plots$Variance_V3 +     
+                        geom_segment(aes(x = Cov_Num - segment_width/2, 
+                                          xend = Cov_Num + segment_width/2,
+                                          y = 0.375, 
+                                          yend = 0.375),
+                                          linetype = "dashed", color = "black", 
+                                          inherit.aes = FALSE) 
+
+effect_plots$Variance_gamma =
+                        effect_plots$Variance_gamma +     
+                        geom_segment(aes(x = Cov_Num - segment_width/2, 
+                                          xend = Cov_Num + segment_width/2,
+                                          y = 0.125, 
+                                          yend = 0.125),
+                                          linetype = "dashed", color = "black", 
+                                          inherit.aes = FALSE) 
+
+effect_plots$Variance_epsilon =
+                        effect_plots$Variance_epsilon +     
+                        geom_segment(aes(x = Cov_Num - segment_width/2, 
+                                          xend = Cov_Num + segment_width/2,
+                                          y = 0.125, 
+                                          yend = 0.125),
+                                          linetype = "dashed", color = "black", 
+                                          inherit.aes = FALSE) 
 ```
+
 
 ## Theoretical explained variance
 ```{r}
@@ -271,6 +333,10 @@ data_for_conditional_variance <- combined_results_long %>%
 y_label_marginal = expression('Total marginal variance' ~ Sigma ~ beta[i]^2)
 y_label_conditional = expression('Total marginal variance' ~ Sigma ~ beta[i]^2 ~ + ~ sigma[alpha]^2)
 
+
+segment_width <- 1
+variance_explained$Cov_Num <- as.numeric(as.factor(variance_explained$rho))
+
  # Create the violin plot for the current effect
 marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance, y = value, fill=Method)) +
   geom_violin(trim = FALSE) +
@@ -288,8 +354,13 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
   facet_wrap(~Method) +  # Separate plots by Method 
+  geom_segment(data = variance_explained, 
+               aes(x = Cov_Num - segment_width/2, xend = Cov_Num + segment_width/2,
+                   y = R2_marginal, yend = R2_marginal),
+               inherit.aes = FALSE, 
+               linetype = "dashed", color = "black")
   #scale_y_continuous(limits = c(0.7, 1)) +
-  geom_hline(data = variance_explained, aes(yintercept = R2_marginal, color = ), linetype = "dashed")
+  #geom_hline(data = variance_explained, aes(yintercept = R2_marginal, color = ), linetype = "dashed")
   #geom_hline(yintercept = variance_explained$R2_marginal[1], linetype = "dashed") 
 
 
@@ -309,35 +380,15 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
   facet_wrap(~Method) +  # Separate plots by Method 
+  geom_segment(data = variance_explained, 
+               aes(x = Cov_Num - segment_width/2, xend = Cov_Num + segment_width/2,
+                   y = R2_conditional, yend = R2_conditional),
+               inherit.aes = FALSE, 
+               linetype = "dashed", color = "black")
   #scale_y_continuous(limits = c(0.7, 1)) +
-  geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
+  #geom_hline(data = variance_explained, aes(yintercept = R2_conditional, color = ), linetype = "dashed") 
   #geom_hline(yintercept = variance_explained$R2_conditional[1], linetype = "dashed") 
 
-```
-
-```{r}
-set.seed(1234)
-rho <- 0.9 #rho_values[i]
-
-# Calculate Var(Y) for the current rho
-var_Y <- (sum((beta^2)) + 
-              2*(beta[1] * beta[2] * rho
-             + beta[1] * beta[3] * rho
-             + beta[3] * beta[2] * rho)
-             + sigma_gamma_sq + sigma_epsilon_sq)
-#cat(var_Y)
-
-# Calculate conditional R-squared
-R2_conditional <- (var_Y - sigma_epsilon_sq) / var_Y
-
-# Calculate marginal R-squared
-R2_marginal <- (var_Y - sigma_epsilon_sq - sigma_gamma_sq) / var_Y
-
-#variance_explained[i, "R2_conditional"] <- R2_conditional
-#variance_explained[i, "R2_marginal"] <- R2_marginal
-#var_Y
-R2_conditional
-#7/8
 ```
 
 
