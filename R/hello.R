@@ -17,10 +17,6 @@
 
 # -----------------------
 
-#' Creates an enviroment to store some useful quantities for later use in other functions.
-#' Primarilu useful to keep information throughout the script
-bayesian_imp_env <- new.env(parent = emptyenv())
-
 
 #' Standardize Data
 #'
