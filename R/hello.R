@@ -530,7 +530,8 @@ gelman_r2_metrics <- function(model, s = 1000, plot = FALSE, modelname="model") 
     library(ggplot2)
 
     p <- ggplot() +
-      geom_histogram(aes(x = gelman_r2_cond), bins = 30, fill = "skyblue") +
+      #geom_histogram(aes(x = gelman_r2_cond), bins = 30, fill = "skyblue") +
+      geom_density(aes(x = gelman_r2_cond), fill = "skyblue", alpha = 0.7) +
       labs(title = paste("Distribution of Gelman Conditional R² of", modelname), x = "Gelman R²", y = "Frequency") +
       theme_minimal()
 
