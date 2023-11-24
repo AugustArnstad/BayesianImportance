@@ -287,6 +287,8 @@ run_bayesian_imp <- function(formula, data, n_samp=5000, plot=FALSE, return_samp
 #'
 #' A function to visualize the posterior distributions of fixed and random effects from the Bayesian importance analysis.
 #'
+#' NOTE: This plots the approximated marginals of the model parameters. If there is correlation among the predictors, consider using sample_posteriors instead.
+#'
 #' @param model_results The results from the INLA model, as obtained from \code{run_bayesian_imp}.
 #' @param ... Additional arguments to customize the plot.
 #'
