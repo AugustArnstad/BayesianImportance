@@ -439,6 +439,7 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   beta_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
   importance_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
+  R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
 
   SVD = BayesianImportance::SVD_decomp(X)
 
@@ -450,8 +451,10 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   for (i in 1:n_samp){
     beta <- samps_Z[[i]]$latent[(n + n_classes + 2):(n + n_classes + num_fixed + 1)]
+    sigma_sq = sum(1/samps_Z[[i]]$hyperpar)
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
+    R2_mat[i, ] <- t(lambda^2 %*% beta^2)%*%lambda^2 %*% beta^2/(t(lambda^2 %*% beta^2)%*%lambda^2 %*% beta^2 + sigma_sq
   }
 
   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
@@ -466,7 +469,7 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
     )
   })
 
-  return(list(beta = beta_mat, importance=importance_mat, marginals = df_list))
+  return(list(beta = beta_mat, importance=importance_mat, marginals = df_list, r2=R2_mat))
 }
 
 

@@ -196,12 +196,18 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
   segment_width <- 1
   
   Cov_Num <- as.numeric(as.factor(0))
-
+  
+  legend_pos= "none"
   
   if (effect=="Variance_V2"){
     theor_val = 0.25
+    #legend_pos="right"
   }else if(effect=="Variance_V3"){
     theor_val = 0.375
+  }else if (effect=="Variance_gamma"){
+    #legend_pos="right"
+  }else if (effect=="Variance_epsilon"){
+    #legend_pos="right"
   }else{
     theor_val = 0.125
   }
@@ -216,13 +222,13 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
          y = y_label,
          x = expression('Covariance Level' ~ rho)) +
     theme_minimal() +
-    theme(legend.position = "right", 
-          legend.text = element_text(size = 20), 
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
+    theme(legend.position = legend_pos, 
+          legend.text = element_text(size = 24), 
+          legend.title = element_text(size = 24),
+          plot.title = element_text(size = 24, face = "bold"),
+          axis.title.x = element_text(size = 24),
+          axis.title.y = element_text(size = 24),
+          strip.text = element_text(size = 24),
           axis.text.x = element_text(size = 20),
           axis.text.y = element_text(size = 20)) +  # Adjust legend position as needed
     facet_wrap(~Method) 
@@ -340,17 +346,17 @@ variance_explained$Cov_Num <- as.numeric(as.factor(variance_explained$rho))
  # Create the violin plot for the current effect
 marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance, y = value, fill=Method)) +
   geom_violin(trim = FALSE) +
-  labs(title = paste("Results for total marginal variance"),
+  labs(#title = paste("Results for total marginal variance"),
         y = y_label_marginal,
         x = expression('Covariance Level' ~ rho)) +
   theme_minimal() +
   theme(legend.position = "right", 
-        legend.text = element_text(size = 20), 
-        legend.title = element_text(size = 20),
-        plot.title = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_text(size = 20),
-        strip.text = element_text(size = 20),
+        legend.text = element_text(size = 24), 
+        legend.title = element_text(size = 24),
+        plot.title = element_text(size = 24, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        strip.text = element_text(size = 24),
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
   facet_wrap(~Method) +  # Separate plots by Method 
@@ -366,17 +372,17 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
 
 conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covariance, y = value, fill=Method)) +
   geom_violin(trim = FALSE) +
-  labs(title = paste("Results for total conditional variance"),
+  labs(#title = paste("Results for total conditional variance"),
         y = y_label_conditional,
         x = expression('Covariance Level' ~ rho)) +
   theme_minimal() +
   theme(legend.position = "right", 
-        legend.text = element_text(size = 20), 
-        legend.title = element_text(size = 20),
-        plot.title = element_text(size = 20, face = "bold"),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_text(size = 20),
-        strip.text = element_text(size = 20),
+        legend.text = element_text(size = 24), 
+        legend.title = element_text(size = 24),
+        plot.title = element_text(size = 24, face = "bold"),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        strip.text = element_text(size = 24),
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
   facet_wrap(~Method) +  # Separate plots by Method 
@@ -463,14 +469,14 @@ if (!dir.exists(output_folder_plots)) {
 # Assuming you have a list of ggplot objects named effect_plots
 for (effect_name in names(effect_plots)) {
   file_name <- file.path(output_folder_plots, paste(effect_name, ".png", sep = ""))
-  ggsave(file_name, plot = effect_plots[[effect_name]], width = 10, height = 6, dpi = 300)
+  ggsave(file_name, plot = effect_plots[[effect_name]], width = 8, height = 5, dpi = 300)
 }
 
 file_name <- file.path(output_folder_plots, paste("Marginal_Variance.png", sep = ""))
-ggsave(file_name, plot = marginal_variance_plot, width = 10, height = 6, dpi = 300)
+ggsave(file_name, plot = marginal_variance_plot, width = 8, height = 5, dpi = 300)
 
 file_name <- file.path(output_folder_plots, paste("Conditional_Variance.png", sep = ""))
-ggsave(file_name, plot = conditional_variance_plot, width = 10, height = 6, dpi = 300)
+ggsave(file_name, plot = conditional_variance_plot, width = 8, height = 5, dpi = 300)
 ```
 
 
