@@ -115,7 +115,6 @@ set.seed(1234)
 model1 <- run_bayesian_imp(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1)
 posteriors1 <- sample_posteriors(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1, 5000, n, n_classes=200)
 
-
 model2 <- run_bayesian_imp(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2)
 posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n, n_classes=200)
 
@@ -127,6 +126,11 @@ posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_baye
 model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
 posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n, n_classes=200)
 ```
+
+```{r}
+posteriors1$r2
+```
+
 
 
 ## PLOTTING
@@ -162,10 +166,10 @@ plot_posterior <- function(betas, importances, marginals, importance=FALSE, theo
   p <- ggplot() +
     geom_density(data = mat_long, aes(x = Value, fill = as.factor(Variable)), alpha = 0.5) +
     geom_line(data = df_marginals, aes(x = x, y = y, color = Effect)) +
-    labs(title = plot_title, 
+    labs(#title = plot_title, 
          x = "Values", y = "Density/Frequency") +
     theme_minimal() +
-    theme(legend.position = "right",
+    theme(legend.position = "none",
           legend.text = element_text(size = 20),
           legend.title = element_text(size = 20),
           plot.title = element_text(size = 20, face = "bold"),
@@ -209,6 +213,18 @@ plot3
 
 plot4
 ```
+
+
+```{r}
+ggplot(as.data.frame(posteriors3$r2), aes(x = V1)) + 
+  geom_density(fill = "blue", alpha = 0.5) + 
+  labs(title = "Density Plot of R-squared Values",
+       x = "R-squared",
+       y = "Density") +
+  theme_minimal()
+```
+
+
 
 ## GELMAN R2
 Here, we compute and visualize the Gelman conditional R² metrics for each model. This metric gives insight into the proportion of variance explained by the fixed effects in the models.
