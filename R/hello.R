@@ -454,7 +454,7 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
     sigma_sq = sum(1/samps_Z[[i]]$hyperpar)
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
-    R2_mat[i, ] <- lambda^2 %*% beta^2/(lambda^2 %*% beta^2 + sigma_sq)
+    R2_mat[i, ] <- t(beta)%*%t(lambda) %*% lambda %*% beta/(t(beta)%*%t(lambda) %*% lambda %*% beta + sigma_sq)
   }
 
   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
