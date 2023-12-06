@@ -108,6 +108,15 @@ data_bayes4 = data.frame(cbind(data_bayes4, gamma=gamma))
 
 ```
 
+```{r}
+sum(BayesianImportance::SVD_decomp(X4)$lambda^2 %*% c(1, 2, 3)^2)
+t(c(1, 2, 3))%*% t(BayesianImportance::SVD_decomp(X1)$lambda) %*% BayesianImportance::SVD_decomp(X1)$lambda %*% c(1, 2, 3)
+#BayesianImportance::SVD_decomp(X2)$lambda#^2 #%*% c(1, 2, 3)^2
+#BayesianImportance::SVD_decomp(X3)$lambda#^2 #%*% c(1, 2, 3)^2
+#BayesianImportance::SVD_decomp(X4)$lambda#^2 #%*% c(1, 2, 3)^2
+```
+
+
 ## USAGE
 Here we demonstrate the usage of the BayesianImportance package. We fit Bayesian models and sample posterior distributions for different simulated datasets using functions from the package. Some EDA is required, for example obtaining the number of classes in total across all random effects, which is used as input.
 ```{r}
@@ -116,15 +125,13 @@ model1 <- run_bayesian_imp(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1)
 posteriors1 <- sample_posteriors(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1, 5000, n, n_classes=200)
 
 model2 <- run_bayesian_imp(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2)
-posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n, n_classes=200)
+ posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n, n_classes=200)
 
+ model3 <- run_bayesian_imp(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3)
+ posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3, 5000, n, n_classes=200)
 
-model3 <- run_bayesian_imp(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3)
-posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3, 5000, n, n_classes=200)
-
-
-model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
-posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n, n_classes=200)
+ model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
+ posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n, n_classes=200)
 ```
 
 ```{r}
@@ -216,12 +223,43 @@ plot4
 
 
 ```{r}
-ggplot(as.data.frame(posteriors3$r2), aes(x = V1)) + 
+test <- inla.posterior.sample(model1, n=1)
+as.numeric(1/test[[1]]$hyperpar['Precision for the Gaussian observations'])
+var(test[[1]]$latent[10000:(10000+200)])
+
+#1/test[[1]]$hyperpar
+
+#sum(1/test[[1]]$hyperpar)
+
+#nr1: -1.4861009462
+#nr200: 0.6279603077
+
+```
+
+
+
+```{r}
+ggplot(as.data.frame(posteriors4$r2), aes(x = V1)) + 
   geom_density(fill = "blue", alpha = 0.5) + 
   labs(title = "Density Plot of R-squared Values",
        x = "R-squared",
        y = "Density") +
   theme_minimal()
+```
+
+```{r}
+posteriors1$importance[5000, ]
+
+
+test_dat <- posteriors1$importance[,1] + posteriors1$importance[,2] + posteriors1$importance[,3]
+head(as.data.frame(test_dat))
+
+ggplot(as.data.frame(test_dat), aes(x = test_dat)) +
+   geom_density(fill = "blue", alpha = 0.5) +
+   labs(title = "Density Plot of R-squared Values",
+        x = "R-squared",
+        y = "Density") +
+   theme_minimal()
 ```
 
 

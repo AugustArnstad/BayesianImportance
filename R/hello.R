@@ -422,7 +422,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
 #' # Run the function
 #' results <- sample_posteriors(formula, data_bayes, n_samp, n, n_classes)
 #'
-#' @export
+#' #' @export
 sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   model <- run_bayesian_imp(formula, data=data)
@@ -434,6 +434,34 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
   fixed_effects_str <- gsub("\\+\\s*$", "", fixed_effects_str)
   fixed_effect_vars <- unlist(strsplit(fixed_effects_str, "\\s*\\+\\s*"))
   fixed_effects <- trimws(fixed_effect_vars)
+
+  # Extracting random effects
+  random_effects_str <- regmatches(split_formula, gregexpr("\\(.*?\\)", split_formula))
+  random_effects <- lapply(random_effects_str, function(x) gsub("[\\(\\)]", "", x))
+  random_effects <- unlist(random_effects)
+  random_effects <- strsplit(random_effects, "\\|")
+
+  # Extracting random effect variable names, excluding '1'
+  random_effect_vars <- unique(unlist(lapply(random_effects, function(x) {
+    vars <- trimws(x)
+    # Taking the second part after '|', assuming the first part is '1' or grouping factor
+    if (length(vars) > 1) {
+      return(vars[2])
+    } else {
+      return(vars[1])
+    }
+  })))
+  random_effect_vars
+
+  random_effects_data <- data[, random_effect_vars, drop = FALSE]
+
+  ncols_ran <- length(random_effects_data[1, ])
+  nclasses_vec <- matrix(NA, nrow=ncols_ran, ncol=1)
+  for (i in 1:ncols_ran){
+    nclasses_vec[i] <- length(unique(random_effects_data[, i]))
+  }
+
+  n_classes=sum(nclasses_vec)
 
   X = data[fixed_effects]
 
@@ -451,9 +479,25 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   for (i in 1:n_samp){
     beta <- samps_Z[[i]]$latent[(n + n_classes + 2):(n + n_classes + num_fixed + 1)]
-    sigma_sq = var(samps_Z[[i]]$latent[n:(n+n_classes)]) + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations']) #sum(1/samps_Z[[i]]$hyperpar)
+    #sigma_sq = var(samps_Z[[i]]$latent[n:(n+n_classes)]) + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations']) #sum(1/samps_Z[[i]]$hyperpar)
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
+
+    var_sum <- 0
+    start_idx <- n + 1
+
+    # Loop through each class and sum their variances
+    for (j in 1:length(nclasses_vec)){
+      end_idx <- start_idx + nclasses_vec[j] - 1
+      var_sum <- var_sum + var(samps_Z[[i]]$latent[start_idx:end_idx])
+      print(var_sum)
+      start_idx <- end_idx + 1
+    }
+
+    # Add the precision for Gaussian observations
+    sigma_sq <- var_sum + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations'])
+    #print(sigma_sq)
+
     R2_mat[i, ] <- sum(importance_mat[i, ])/(sum(importance_mat[i, ]) + sigma_sq)
   }
 
@@ -471,7 +515,99 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   return(list(beta = beta_mat, importance=importance_mat, marginals = df_list, r2=R2_mat))
 }
-
+#' sample_posteriors <- function(formula, data, n_samp, n, n_classes){
+#'
+#'   model <- run_bayesian_imp(formula, data=data)
+#'
+#'   formula_str = deparse(formula)
+#'   split_formula <- strsplit(formula_str, "~")[[1]][2]
+#'   fixed_effects_str <- ifelse(grepl("\\(", split_formula), strsplit(split_formula, "\\(")[[1]][1], split_formula)
+#'   fixed_effects_str <- trimws(fixed_effects_str)
+#'   fixed_effects_str <- gsub("\\+\\s*$", "", fixed_effects_str)
+#'   fixed_effect_vars <- unlist(strsplit(fixed_effects_str, "\\s*\\+\\s*"))
+#'   fixed_effects <- trimws(fixed_effect_vars)
+#'
+#'   # Extracting random effects
+#'   random_effects_str <- regmatches(split_formula, gregexpr("\\(.*?\\)", split_formula))
+#'   random_effects <- lapply(random_effects_str, function(x) gsub("[\\(\\)]", "", x))
+#'   random_effects <- unlist(random_effects)
+#'   random_effects <- strsplit(random_effects, "\\|")
+#'
+#'   # Extracting random effect variable names, excluding '1'
+#'   random_effect_vars <- unique(unlist(lapply(random_effects, function(x) {
+#'     vars <- trimws(x)
+#'     # Taking the second part after '|', assuming the first part is '1' or grouping factor
+#'     if (length(vars) > 1) {
+#'       return(vars[2])
+#'     } else {
+#'       return(vars[1])
+#'     }
+#'   })))
+#'   random_effect_vars
+#'
+#'   random_effects_data <- data[, random_effect_vars, drop = FALSE]
+#'
+#'   ncols_ran <- length(random_effects_data[1, ])
+#'   nclasses_vec <- matrix(NA, nrow=ncols_ran, ncol=1)
+#'   for (i in 1:ncols_ran){
+#'     nclasses_vec[i] <- length(unique(random_effects_data[, i]))
+#'   }
+#'
+#'   n_classes=sum(nclasses_vec)
+#'
+#'   X = data[fixed_effects]
+#'
+#'   beta_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
+#'   importance_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
+#'   R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
+#'
+#'   SVD = BayesianImportance::SVD_decomp(X)
+#'
+#'   lambda = SVD$lambda
+#'
+#'   samps_Z <- inla.posterior.sample(model, n = n_samp)
+#'
+#'   num_fixed <- ncol(X)
+#'
+#'   start_idx <- n + 1
+#'
+#'   for (i in 1:n_samp){
+#'     beta <- samps_Z[[i]]$latent[(n + n_classes + 2):(n + n_classes + num_fixed + 1)]
+#'     #sigma_sq = var(samps_Z[[i]]$latent[n:(n+n_classes)]) + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations']) #sum(1/samps_Z[[i]]$hyperpar)
+#'     beta_mat[i, ] <- beta
+#'     importance_mat[i, ] <- lambda^2 %*% beta^2
+#'
+#'     var_sum <- 0
+#'
+#'     # Loop through each class and sum their variances
+#'     for (j in 1:length(nclasses)){
+#'       end_idx <- start_idx + nclasses[j] - 1
+#'       var_sum <- var_sum + var(samps_Z[[i]]$latent[start_idx:end_idx])
+#'       start_idx <- end_idx + 1
+#'     }
+#'
+#'     # Add the precision for Gaussian observations
+#'     sigma_sq <- var_sum + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations'])
+#'
+#'
+#'     R2_mat[i, ] <- sum(importance_mat[i, ])/(sum(importance_mat[i, ]) + sigma_sq)
+#'   }
+#'
+#'   variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+#'   random_effect_names <- names(model$marginals.hyperpar)
+#'
+#'
+#'   df_list <- lapply(1:length(variance_marginals_list), function(i) {
+#'     data.frame(
+#'       x = variance_marginals_list[[i]][, 1],
+#'       y = variance_marginals_list[[i]][, 2],
+#'       Effect = random_effect_names[i]
+#'     )
+#'   })
+#'
+#'   return(list(beta = beta_mat, importance=importance_mat, marginals = df_list, r2=R2_mat))
+#' }
+#'
 
 #' Sample Response Matrix from INLA Model
 #'
