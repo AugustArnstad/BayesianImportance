@@ -451,7 +451,7 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 
   for (i in 1:n_samp){
     beta <- samps_Z[[i]]$latent[(n + n_classes + 2):(n + n_classes + num_fixed + 1)]
-    sigma_sq = sum(1/samps_Z[[i]]$hyperpar)
+    sigma_sq = var(samps_Z[[i]]$latent[n:(n+n_classes)]) + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations']) #sum(1/samps_Z[[i]]$hyperpar)
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
     R2_mat[i, ] <- sum(importance_mat[i, ])/(sum(importance_mat[i, ]) + sigma_sq)
