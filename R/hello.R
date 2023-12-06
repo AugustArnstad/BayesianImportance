@@ -490,7 +490,6 @@ sample_posteriors <- function(formula, data, n_samp, n, n_classes){
     for (j in 1:length(nclasses_vec)){
       end_idx <- start_idx + nclasses_vec[j] - 1
       var_sum <- var_sum + var(samps_Z[[i]]$latent[start_idx:end_idx])
-      print(var_sum)
       start_idx <- end_idx + 1
     }
 
