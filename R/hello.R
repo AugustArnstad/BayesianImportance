@@ -423,7 +423,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
 #' results <- sample_posteriors(formula, data_bayes, n_samp, n, n_classes)
 #'
 #' #' @export
-sample_posteriors <- function(formula, data, n_samp, n, n_classes){
+sample_posteriors <- function(formula, data, n_samp, n){
 
   model <- run_bayesian_imp(formula, data=data)
 
