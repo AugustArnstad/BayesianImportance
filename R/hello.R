@@ -422,7 +422,7 @@ plot_posteriors <- function(model, importance=FALSE, modelname="model") {
 #' # Run the function
 #' results <- sample_posteriors(formula, data_bayes, n_samp, n, n_classes)
 #'
-#' #' @export
+#' @export
 sample_posteriors <- function(formula, data, n_samp, n){
 
   model <- run_bayesian_imp(formula, data=data)
@@ -475,6 +475,8 @@ sample_posteriors <- function(formula, data, n_samp, n){
   lambda = SVD$lambda
 
   samps_Z <- inla.posterior.sample(model, n = n_samp)
+  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
+  random_effect_names <- names(model$marginals.hyperpar)
 
   num_fixed <- ncol(X)
 
@@ -483,6 +485,8 @@ sample_posteriors <- function(formula, data, n_samp, n){
     #sigma_sq = var(samps_Z[[i]]$latent[n:(n+n_classes)]) + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations']) #sum(1/samps_Z[[i]]$hyperpar)
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
+
+    marginal_epsilon <- variance_marginals_list$`Precision for the Gaussian observations`
 
     var_sum <- 0
     start_idx <- n + 1
@@ -495,15 +499,14 @@ sample_posteriors <- function(formula, data, n_samp, n){
     }
 
     # Add the precision for Gaussian observations
-    sigma_sq <- var_sum + as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations'])
+    sigma_sq <- var_sum + mean(marginal_epsilon) #as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations'])
     #print(sigma_sq)
 
     R2_mat[i, ] <- sum(importance_mat[i, ])/(sum(importance_mat[i, ]) + sigma_sq)
     R2_cond_mat[i, ] <- (sum(importance_mat[i, ])+var_sum)/(sum(importance_mat[i, ]) + sigma_sq)
   }
 
-  variance_marginals_list <- lapply(model$marginals.hyperpar, function(x) inla.tmarginal(function(t) 1/t, x))
-  random_effect_names <- names(model$marginals.hyperpar)
+
 
 
   df_list <- lapply(1:length(variance_marginals_list), function(i) {
