@@ -486,7 +486,7 @@ sample_posteriors <- function(formula, data, n_samp, n){
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
 
-    marginal_epsilon <- variance_marginals_list$`Precision for the Gaussian observations`
+    marginal_epsilon <- variance_marginals_list$`Precision for the Gaussian observations`[, 1]
 
     var_sum <- 0
     start_idx <- n + 1
@@ -519,6 +519,8 @@ sample_posteriors <- function(formula, data, n_samp, n){
 
   return(list(beta = beta_mat, importance=importance_mat, marginals = df_list, r2=R2_mat, r2_cond=R2_cond_mat))
 }
+
+
 #' sample_posteriors <- function(formula, data, n_samp, n, n_classes){
 #'
 #'   model <- run_bayesian_imp(formula, data=data)
