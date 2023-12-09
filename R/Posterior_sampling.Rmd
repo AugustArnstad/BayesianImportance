@@ -109,9 +109,6 @@ data_bayes4 = data.frame(cbind(data_bayes4, gamma=gamma))
 
 ```
 
-```{r}
-gamma
-```
 
 
 ## USAGE
