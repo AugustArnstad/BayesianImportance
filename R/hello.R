@@ -469,6 +469,7 @@ sample_posteriors <- function(formula, data, n_samp, n){
   importance_mat <- matrix(NA, nrow=n_samp, ncol=ncol(X))
   R2_mat <- matrix(NA, nrow=n_samp, ncol=1)
   R2_cond_mat <- matrix(NA, nrow=n_samp, ncol=1)
+  sigma_mat <- matrix(NA, nrow=n_samp, ncol=1)
 
   SVD = BayesianImportance::SVD_decomp(X)
 
@@ -504,6 +505,7 @@ sample_posteriors <- function(formula, data, n_samp, n){
 
     R2_mat[i, ] <- sum(importance_mat[i, ])/(sum(importance_mat[i, ]) + sigma_sq)
     R2_cond_mat[i, ] <- (sum(importance_mat[i, ])+var_sum)/(sum(importance_mat[i, ]) + sigma_sq)
+    sigma_mat[i, ] <- sigma_sq
   }
 
 
@@ -517,7 +519,7 @@ sample_posteriors <- function(formula, data, n_samp, n){
     )
   })
 
-  return(list(beta = beta_mat, importance=importance_mat, marginals = df_list, r2=R2_mat, r2_cond=R2_cond_mat))
+  return(list(beta = beta_mat, importance=importance_mat, marginals = df_list, r2=R2_mat, r2_cond=R2_cond_mat, sigma=sigma_mat))
 }
 
 

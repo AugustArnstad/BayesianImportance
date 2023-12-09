@@ -75,7 +75,7 @@ X4 <- rmnorm(n, mu, sigma4)
 
 #Add random effects
 gamma <- rep(rnorm(nclass_gamma, 0, sqrt(1)), each=n/nclass_gamma)
-eta <- rep(rnorm(nclass_eta, 0, sqrt(1/4)), each=n/nclass_eta)
+eta <- rep(rnorm(nclass_eta, 0, sqrt(1/2)), each=n/nclass_eta)
 epsilon = rnorm(n, mean=0, sd=sqrt(1))
 beta <- c(1, sqrt(2), sqrt(3))
 
@@ -117,16 +117,42 @@ set.seed(1234)
 
 model1 <- run_bayesian_imp(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1)
 posteriors1 <- sample_posteriors(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1, 5000, n)
-
-model2 <- run_bayesian_imp(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2)
-posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n)
-
-model3 <- run_bayesian_imp(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3)
-posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3, 5000, n)
-
-model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
-posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n)
+# 
+# model2 <- run_bayesian_imp(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2)
+# posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n)
+# 
+# model3 <- run_bayesian_imp(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3)
+# posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3, 5000, n)
+# 
+# model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
+# posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n)
 ```
+
+```{r}
+mean(posteriors1$r2)
+
+middle_1 <- mean(range(as.data.frame(posteriors1$r2)))
+x_lim_1 <- c(middle_1 - 0.05, middle_1 + 0.05)
+
+r2plot_1 <- ggplot(as.data.frame(posteriors1$r2), aes(x = V1)) + 
+  geom_density(fill = "blue", alpha = 0.5) + 
+  geom_vline(xintercept = variance_explained$R2_marginal[1], color = "black", linetype = "dashed") +
+  theme_minimal() +
+  xlim(x_lim_1) +
+  theme(legend.position = "none", #USE right FOR LEGEND
+          legend.text = element_text(size = 20),
+          legend.title = element_text(size = 20),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.title.x = element_text(size = 20),
+          axis.title.y = element_text(size = 20),
+          strip.text = element_text(size = 20),
+          axis.text.x = element_text(size = 20),
+          axis.text.y = element_text(size = 20)) +
+  labs(,
+       x = expression(R^2),
+       y = "Frequency") 
+```
+
 
 ## PLOTTING
 This code block defines a function plot_posterior that visualizes posterior distributions and relative importance from the sampled posteriors. The function creates density plots and overlays line plots for variance marginals. This can be modified for the specific problem at hand, and is not included in the package since it is a problem specific function.
