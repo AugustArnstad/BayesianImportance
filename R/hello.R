@@ -486,7 +486,7 @@ sample_posteriors <- function(formula, data, n_samp, n){
     beta_mat[i, ] <- beta
     importance_mat[i, ] <- lambda^2 %*% beta^2
 
-    marginal_epsilon <- variance_marginals_list$`Precision for the Gaussian observations`[, 1]
+    marginal_epsilon <- variance_marginals_list$`Precision for the Gaussian observations`
 
     var_sum <- 0
     start_idx <- n + 1
@@ -499,7 +499,7 @@ sample_posteriors <- function(formula, data, n_samp, n){
     }
 
     # Add the precision for Gaussian observations
-    sigma_sq <- var_sum + mean(marginal_epsilon) #as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations'])
+    sigma_sq <- var_sum + inla.mmarginal(marginal_epsilon) #mean(marginal_epsilon) #as.numeric(1/samps_Z[[i]]$hyperpar['Precision for the Gaussian observations'])
     #print(sigma_sq)
 
     R2_mat[i, ] <- sum(importance_mat[i, ])/(sum(importance_mat[i, ]) + sigma_sq)
