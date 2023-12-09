@@ -54,7 +54,7 @@ library(mnormt)
 library(ggplot2)
 library(reshape2)
 library(RColorBrewer)
-set.seed(1234)
+set.seed(12)
 
 n <- 10000
 nclass_gamma <- 200
@@ -109,6 +109,10 @@ data_bayes4 = data.frame(cbind(data_bayes4, gamma=gamma))
 
 ```
 
+```{r}
+gamma
+```
+
 
 ## USAGE
 Here we demonstrate the usage of the BayesianImportance package. We fit Bayesian models and sample posterior distributions for different simulated datasets using functions from the package. Some EDA is required, for example obtaining the number of classes in total across all random effects, which is used as input.
@@ -117,40 +121,15 @@ set.seed(1234)
 
 model1 <- run_bayesian_imp(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1)
 posteriors1 <- sample_posteriors(Y1 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes1, 5000, n)
-# 
-# model2 <- run_bayesian_imp(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2)
-# posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n)
-# 
-# model3 <- run_bayesian_imp(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3)
-# posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3, 5000, n)
-# 
-# model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
-# posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n)
-```
 
-```{r}
-mean(posteriors1$r2)
+model2 <- run_bayesian_imp(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2)
+posteriors2 <- sample_posteriors(Y2 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes2, 5000, n)
 
-middle_1 <- mean(range(as.data.frame(posteriors1$r2)))
-x_lim_1 <- c(middle_1 - 0.05, middle_1 + 0.05)
+model3 <- run_bayesian_imp(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3)
+posteriors3 <- sample_posteriors(Y3 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes3, 5000, n)
 
-r2plot_1 <- ggplot(as.data.frame(posteriors1$r2), aes(x = V1)) + 
-  geom_density(fill = "blue", alpha = 0.5) + 
-  geom_vline(xintercept = variance_explained$R2_marginal[1], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_1) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency") 
+model4 <- run_bayesian_imp(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4)
+posteriors4 <- sample_posteriors(Y4 ~ V2 + V3 + V4 + (1 | gamma), data=data_bayes4, 5000, n)
 ```
 
 
@@ -394,6 +373,7 @@ r2cond_plot_1 <- ggplot(as.data.frame(posteriors1$r2_cond), aes(x = V1)) +
   geom_density(fill = "blue", alpha = 0.5) + 
   geom_vline(xintercept = variance_explained$R2_conditional[1], color = "black", linetype = "dashed") +
   theme_minimal() +
+  xlim(x_lim_cond_1) +
   theme(legend.position = "none", #USE right FOR LEGEND
           legend.text = element_text(size = 20),
           legend.title = element_text(size = 20),
@@ -415,6 +395,7 @@ r2cond_plot_2 <- ggplot(as.data.frame(posteriors2$r2_cond), aes(x = V1)) +
   geom_density(fill = "blue", alpha = 0.5) + 
   geom_vline(xintercept = variance_explained$R2_conditional[2], color = "black", linetype = "dashed") +
   theme_minimal() +
+  xlim(x_lim_cond_2) +
   theme(legend.position = "none", #USE right FOR LEGEND
           legend.text = element_text(size = 20),
           legend.title = element_text(size = 20),
@@ -436,6 +417,7 @@ r2cond_plot_3 <- ggplot(as.data.frame(posteriors3$r2_cond), aes(x = V1)) +
   geom_density(fill = "blue", alpha = 0.5) + 
   geom_vline(xintercept = variance_explained$R2_conditional[3], color = "black", linetype = "dashed") +
   theme_minimal() +
+  xlim(x_lim_cond_3) +
   theme(legend.position = "none", #USE right FOR LEGEND
           legend.text = element_text(size = 20),
           legend.title = element_text(size = 20),
@@ -457,6 +439,7 @@ r2cond_plot_4 <- ggplot(as.data.frame(posteriors4$r2_cond), aes(x = V1)) +
   geom_density(fill = "blue", alpha = 0.5) + 
   geom_vline(xintercept = variance_explained$R2_conditional[4], color = "black", linetype = "dashed") +
   theme_minimal() +
+  xlim(x_lim_cond_4) +
   theme(legend.position = "none", #USE right FOR LEGEND
           legend.text = element_text(size = 20),
           legend.title = element_text(size = 20),
