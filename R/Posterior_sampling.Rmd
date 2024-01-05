@@ -110,7 +110,6 @@ data_bayes4 = data.frame(cbind(data_bayes4, gamma=gamma))
 ```
 
 
-
 ## USAGE
 Here we demonstrate the usage of the BayesianImportance package. We fit Bayesian models and sample posterior distributions for different simulated datasets using functions from the package. Some EDA is required, for example obtaining the number of classes in total across all random effects, which is used as input.
 ```{r}
@@ -177,11 +176,11 @@ plot_posterior <- function(betas, importances, marginals, importance=FALSE, theo
           legend.text = element_text(size = 20),
           legend.title = element_text(size = 20),
           plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
+          axis.title.x = element_text(size = 24),
+          axis.title.y = element_text(size = 24),
           strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
+          axis.text.x = element_text(size = 24),
+          axis.text.y = element_text(size = 24)) +
     scale_fill_manual(name = "Fixed effects", 
                       values = colors[1:3], 
                       labels = fixed_effect_labels) +
@@ -267,196 +266,58 @@ variance_explained
 ```
 
 ```{r}
-#Marginal
-middle_1 <- mean(range(as.data.frame(posteriors1$r2)))
-x_lim_1 <- c(middle_1 - 0.05, middle_1 + 0.05)
-
-r2plot_1 <- ggplot(as.data.frame(posteriors1$r2), aes(x = V1)) + 
-  geom_density(fill = "blue", alpha = 0.5) + 
-  geom_vline(xintercept = variance_explained$R2_marginal[1], color = "black", linetype = "dashed") +
+colors=rainbow(5)
+# Create a combined plot with different colors for each distribution
+marginal_var <- ggplot() +
+  geom_density(data = as.data.frame(posteriors1$r2), aes(x = V1), fill = colors[1], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_marginal[1], color = colors[1], linetype = "dashed") +
+  
+  geom_density(data = as.data.frame(posteriors2$r2), aes(x = V1), fill = colors[2], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_marginal[2], color = colors[2], linetype = "dashed") +
+  
+  geom_density(data = as.data.frame(posteriors3$r2), aes(x = V1), fill = colors[3], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_marginal[3], color = colors[3], linetype = "dashed") +
+  
+  geom_density(data = as.data.frame(posteriors4$r2), aes(x = V1), fill = colors[4], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_marginal[4], color = colors[4], linetype = "dashed") +
+  
   theme_minimal() +
-  xlim(x_lim_1) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency") 
+  theme(legend.position = "none",
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20)) +
+  labs(x = expression(R^2), y = "Frequency")
 
-
-middle_2 <- mean(range(as.data.frame(posteriors2$r2)))
-x_lim_2 <- c(middle_2 - 0.05, middle_2 + 0.05)
-
-r2plot_2 <- ggplot(as.data.frame(posteriors2$r2), aes(x = V1)) +
-  geom_density(fill = "blue", alpha = 0.5) +
-  geom_vline(xintercept = variance_explained$R2_marginal[2], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_2) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency")
-
-middle_3 <- mean(range(as.data.frame(posteriors3$r2)))
-x_lim_3 <- c(middle_3 - 0.05, middle_3 + 0.05)
-
-r2plot_3 <- ggplot(as.data.frame(posteriors3$r2), aes(x = V1)) +
-  geom_density(fill = "blue", alpha = 0.5) +
-  geom_vline(xintercept = variance_explained$R2_marginal[3], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_3) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency")
-
-
-middle_4 <- mean(range(as.data.frame(posteriors4$r2)))
-x_lim_4 <- c(middle_4 - 0.05, middle_4 + 0.05)
-
-r2plot_4 <- ggplot(as.data.frame(posteriors4$r2), aes(x = V1)) +
-  geom_density(fill = "blue", alpha = 0.5) +
-  geom_vline(xintercept = variance_explained$R2_marginal[4], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_4) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency")
-
-r2plot_1
-r2plot_2
-r2plot_3
-r2plot_4
+marginal_var
 ```
 
 ```{r}
-#Conditional
 
-middle_cond_1 <- mean(range(as.data.frame(posteriors1$r2_cond)))
-x_lim_cond_1 <- c(middle_cond_1 - 0.05, middle_cond_1 + 0.05)
-
-r2cond_plot_1 <- ggplot(as.data.frame(posteriors1$r2_cond), aes(x = V1)) + 
-  geom_density(fill = "blue", alpha = 0.5) + 
-  geom_vline(xintercept = variance_explained$R2_conditional[1], color = "black", linetype = "dashed") +
+# Create a combined plot with different colors for each distribution
+conditional_var <- ggplot() +
+  geom_density(data = as.data.frame(posteriors1$r2_cond), aes(x = V1), fill = colors[1], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_conditional[1], color = colors[1], linetype = "dashed") +
+  
+  geom_density(data = as.data.frame(posteriors2$r2_cond), aes(x = V1), fill = colors[2], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_conditional[2], color = colors[2], linetype = "dashed") +
+  
+  geom_density(data = as.data.frame(posteriors3$r2_cond), aes(x = V1), fill = colors[3], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_conditional[3], color = colors[3], linetype = "dashed") +
+  
+  geom_density(data = as.data.frame(posteriors4$r2_cond), aes(x = V1), fill = colors[4], alpha = 0.5) +
+  #geom_vline(xintercept = variance_explained$R2_conditional[4], color = colors[4], linetype = "dashed") +
+  
   theme_minimal() +
-  xlim(x_lim_cond_1) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency") 
+  theme(legend.position = "none",
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        axis.text.x = element_text(size = 24),
+        axis.text.y = element_text(size = 24)) +
+  labs(x = expression(R^2), y = "Frequency")
 
-
-middle_cond_2 <- mean(range(as.data.frame(posteriors2$r2_cond)))
-x_lim_cond_2 <- c(middle_cond_2 - 0.05, middle_cond_2 + 0.05)
-
-r2cond_plot_2 <- ggplot(as.data.frame(posteriors2$r2_cond), aes(x = V1)) + 
-  geom_density(fill = "blue", alpha = 0.5) + 
-  geom_vline(xintercept = variance_explained$R2_conditional[2], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_cond_2) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency") 
-
-
-middle_cond_3 <- mean(range(as.data.frame(posteriors3$r2_cond)))
-x_lim_cond_3 <- c(middle_cond_3 - 0.05, middle_cond_3 + 0.05)
-
-r2cond_plot_3 <- ggplot(as.data.frame(posteriors3$r2_cond), aes(x = V1)) + 
-  geom_density(fill = "blue", alpha = 0.5) + 
-  geom_vline(xintercept = variance_explained$R2_conditional[3], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_cond_3) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency") 
-
-
-middle_cond_4 <- mean(range(as.data.frame(posteriors4$r2_cond)))
-x_lim_cond_4 <- c(middle_cond_4 - 0.05, middle_cond_4 + 0.05)
-
-r2cond_plot_4 <- ggplot(as.data.frame(posteriors4$r2_cond), aes(x = V1)) + 
-  geom_density(fill = "blue", alpha = 0.5) + 
-  geom_vline(xintercept = variance_explained$R2_conditional[4], color = "black", linetype = "dashed") +
-  theme_minimal() +
-  xlim(x_lim_cond_4) +
-  theme(legend.position = "none", #USE right FOR LEGEND
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size = 20),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.title.x = element_text(size = 20),
-          axis.title.y = element_text(size = 20),
-          strip.text = element_text(size = 20),
-          axis.text.x = element_text(size = 20),
-          axis.text.y = element_text(size = 20)) +
-  labs(,
-       x = expression(R^2),
-       y = "Frequency") 
-
-r2cond_plot_1
-r2cond_plot_2
-r2cond_plot_3
-r2cond_plot_4
+conditional_var
 ```
-
-
 
 
 
@@ -483,44 +344,18 @@ ggsave(file_name, plot = plot4, width = 10, height = 6, dpi = 300)
 ```
 
 ```{r}
-output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Figures/Marginal R2"
+output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Figures/R2"
 
 # Create the folder if it doesn't exist
 if (!dir.exists(output_folder_plots)) {
   dir.create(output_folder_plots, recursive = TRUE)
 }
 
-file_name <- file.path(output_folder_plots, paste("Marginal R2, cov=none.png", sep = ""))
-ggsave(file_name, plot = r2plot_1, width = 10, height = 6, dpi = 300)
+file_name <- file.path(output_folder_plots, paste("Marginal_R2.png", sep = ""))
+ggsave(file_name, plot = marginal_var, width = 10, height = 6, dpi = 300)
 
-file_name <- file.path(output_folder_plots, paste("Marginal R2, cov=low.png", sep = ""))
-ggsave(file_name, plot = r2plot_2, width = 10, height = 6, dpi = 300)
+file_name <- file.path(output_folder_plots, paste("Conditional_R2.png", sep = ""))
+ggsave(file_name, plot = conditional_var, width = 10, height = 6, dpi = 300)
 
-file_name <- file.path(output_folder_plots, paste("PMarginal R2, cov=medium.png", sep = ""))
-ggsave(file_name, plot = r2plot_3, width = 10, height = 6, dpi = 300)
-
-file_name <- file.path(output_folder_plots, paste("Marginal R2, cov=high.png", sep = ""))
-ggsave(file_name, plot = r2plot_4, width = 10, height = 6, dpi = 300)
-```
-
-```{r}
-output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Figures/Conditional R2"
-
-# Create the folder if it doesn't exist
-if (!dir.exists(output_folder_plots)) {
-  dir.create(output_folder_plots, recursive = TRUE)
-}
-
-file_name <- file.path(output_folder_plots, paste("Conditional R2, cov=none.png", sep = ""))
-ggsave(file_name, plot = r2cond_plot_1, width = 10, height = 6, dpi = 300)
-
-file_name <- file.path(output_folder_plots, paste("Conditional R2, cov=low.png", sep = ""))
-ggsave(file_name, plot = r2cond_plot_2, width = 10, height = 6, dpi = 300)
-
-file_name <- file.path(output_folder_plots, paste("Conditional R2, cov=medium.png", sep = ""))
-ggsave(file_name, plot = r2cond_plot_3, width = 10, height = 6, dpi = 300)
-
-file_name <- file.path(output_folder_plots, paste("Conditional R2, cov=high.png", sep = ""))
-ggsave(file_name, plot = r2cond_plot_4, width = 10, height = 6, dpi = 300)
 ```
 

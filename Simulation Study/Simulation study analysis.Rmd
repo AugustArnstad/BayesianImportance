@@ -186,11 +186,11 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
   i=i+1
   
   if (effect %in% c("Variance_V1", "Variance_V2", "Variance_V3")) {
-    y_label <- bquote('Relative importance' ~ beta[.(i)]^2)
+    y_label <- bquote('Relative importance' ~ x[.(i)])
   } else if (effect == "Variance_gamma") {
-    y_label <- expression('Relative importance' ~ sigma[alpha]^2)
+    y_label <- expression('Relative importance' ~ alpha)
   } else if (effect == "Variance_epsilon") {
-    y_label <- expression('Relative importance' ~ sigma[epsilon]^2)
+    y_label <- expression('Relative importance' ~ epsilon)
   }
   
   segment_width <- 1
@@ -336,8 +336,8 @@ data_for_conditional_variance <- combined_results_long %>%
   filter(name == "Variance_total_conditional", Method!="LMM") %>%
   mutate(Covariance = as.factor(Covariance))  # Ensure Covariance is a factor
 
-y_label_marginal = expression('Total marginal variance' ~ Sigma ~ beta[i]^2)
-y_label_conditional = expression('Total marginal variance' ~ Sigma ~ beta[i]^2 ~ + ~ sigma[alpha]^2)
+y_label_marginal = expression('Marginal R2 ='  ~ Sigma ~ 'RI(' ~ x[i] ~ ')')
+y_label_conditional = expression('Conditional R2 =' ~ Sigma ~ 'RI(' ~ x[i] ~ ')' ~ + ~ sigma[alpha]^2)
 
 
 segment_width <- 1
@@ -350,7 +350,7 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         y = y_label_marginal,
         x = expression('Covariance Level' ~ rho)) +
   theme_minimal() +
-  theme(legend.position = "right", 
+  theme(legend.position = "none", 
         legend.text = element_text(size = 24), 
         legend.title = element_text(size = 24),
         plot.title = element_text(size = 24, face = "bold"),
@@ -376,7 +376,7 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         y = y_label_conditional,
         x = expression('Covariance Level' ~ rho)) +
   theme_minimal() +
-  theme(legend.position = "right", 
+  theme(legend.position = "none", 
         legend.text = element_text(size = 24), 
         legend.title = element_text(size = 24),
         plot.title = element_text(size = 24, face = "bold"),
