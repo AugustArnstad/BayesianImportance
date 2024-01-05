@@ -1,5 +1,5 @@
 ---
-title: "Fixing posteriors"
+title: "Sampling posteriors with Bayesian Variable Importance"
 author: "August Arnstad"
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output:
@@ -266,48 +266,34 @@ variance_explained
 ```
 
 ```{r}
-colors=rainbow(5)
+colors <- rainbow(5)
 # Create a combined plot with different colors for each distribution
 marginal_var <- ggplot() +
   geom_density(data = as.data.frame(posteriors1$r2), aes(x = V1), fill = colors[1], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_marginal[1], color = colors[1], linetype = "dashed") +
-  
   geom_density(data = as.data.frame(posteriors2$r2), aes(x = V1), fill = colors[2], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_marginal[2], color = colors[2], linetype = "dashed") +
-  
   geom_density(data = as.data.frame(posteriors3$r2), aes(x = V1), fill = colors[3], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_marginal[3], color = colors[3], linetype = "dashed") +
-  
   geom_density(data = as.data.frame(posteriors4$r2), aes(x = V1), fill = colors[4], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_marginal[4], color = colors[4], linetype = "dashed") +
-  
   theme_minimal() +
   theme(legend.position = "none",
         axis.title.x = element_text(size = 24),
         axis.title.y = element_text(size = 24),
         axis.text.x = element_text(size = 24),
         axis.text.y = element_text(size = 24)) +
-  labs(x = expression(Marginal ~ R^2), y = "Frequency")
+  labs(x = bquote(Marginal ~ R^2), y = "Frequency")
 
 marginal_var
+
 ```
+
 
 ```{r}
 
 # Create a combined plot with different colors for each distribution
 conditional_var <- ggplot() +
   geom_density(data = as.data.frame(posteriors1$r2_cond), aes(x = V1), fill = colors[1], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_conditional[1], color = colors[1], linetype = "dashed") +
-  
   geom_density(data = as.data.frame(posteriors2$r2_cond), aes(x = V1), fill = colors[2], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_conditional[2], color = colors[2], linetype = "dashed") +
-  
   geom_density(data = as.data.frame(posteriors3$r2_cond), aes(x = V1), fill = colors[3], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_conditional[3], color = colors[3], linetype = "dashed") +
-  
   geom_density(data = as.data.frame(posteriors4$r2_cond), aes(x = V1), fill = colors[4], alpha = 0.5) +
-  #geom_vline(xintercept = variance_explained$R2_conditional[4], color = colors[4], linetype = "dashed") +
-  
   theme_minimal() +
   theme(legend.position = "none",
         axis.title.x = element_text(size = 24),
