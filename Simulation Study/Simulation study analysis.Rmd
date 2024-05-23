@@ -238,9 +238,9 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
           axis.text.x = element_text(size = 20),
           axis.text.y = element_text(size = 20)) +  # Adjust legend position as needed
     scale_fill_manual(values = c("Relaimpo" = "#B6D7F7",
-                               "BVI" = "#C6CDF7",
+                               "BVI" = "#E6C6DF",
                                "ELMG" = "#C6F7CD",
-                               "ERW" = "#E6C6DF"#,
+                               "ERW" = "#C6CDF7"#,
                                #"0.4" = "#C6F7CD"
                                )) +
     facet_wrap(~Method) 
@@ -374,9 +374,9 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
   scale_fill_manual(values = c("Relaimpo" = "#B6D7F7",
-                               "BVI" = "#C6CDF7",
+                               "BVI" = "#E6C6DF",
                                "ELMG" = "#C6F7CD",
-                               "ERW" = "#E6C6DF"
+                               "ERW" = "#C6CDF7"
                                )) +
   facet_wrap(~Method) +  # Separate plots by Method 
   geom_segment(data = variance_explained, 
@@ -407,9 +407,9 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
   scale_fill_manual(values = c("Relaimpo" = "#B6D7F7",
-                               "BVI" = "#C6CDF7",
+                               "BVI" = "#E6C6DF",
                                "ELMG" = "#C6F7CD",
-                               "ERW" = "#E6C6DF"
+                               "ERW" = "#C6CDF7"
                                )) +
   facet_wrap(~Method) +  # Separate plots by Method 
   geom_segment(data = variance_explained, 
