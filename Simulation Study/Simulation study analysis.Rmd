@@ -58,6 +58,7 @@ library(tidyr)
 library(utils)
 library(xtable)
 
+
 ```
 
 
@@ -67,10 +68,13 @@ library(xtable)
 set.seed(1234)
 # Remember to change directory to where files are stored
 #lmm_results <- read_csv("lmm_results.csv")
-lm_results <- read_csv("lm_results.csv")
-inla_results <- read_csv("inla_results.csv")
-decomp_lmg_results <- read_csv("decomp_lmg_results.csv")
-decomp_rw_results <- read_csv("decomp_rw_results.csv")
+
+setwd("/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/BayesianImportance/Simulation Study")
+
+lm_results <- read.csv("lm_results.csv")
+inla_results <- read.csv("inla_results.csv")
+decomp_lmg_results <- read.csv("decomp_lmg_results.csv")
+decomp_rw_results <- read.csv("decomp_rw_results.csv")
 
 #inla_results
 ```
@@ -226,11 +230,19 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
           legend.text = element_text(size = 24), 
           legend.title = element_text(size = 24),
           plot.title = element_text(size = 24, face = "bold"),
-          axis.title.x = element_text(size = 24),
-          axis.title.y = element_text(size = 24),
+          #axis.title.x = element_text(size = 24),
+          #axis.title.y = element_text(size = 24),
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
           strip.text = element_text(size = 24),
           axis.text.x = element_text(size = 20),
           axis.text.y = element_text(size = 20)) +  # Adjust legend position as needed
+    scale_fill_manual(values = c("Relaimpo" = "#B6D7F7",
+                               "BVI" = "#C6CDF7",
+                               "ELMG" = "#C6F7CD",
+                               "ERW" = "#E6C6DF"#,
+                               #"0.4" = "#C6F7CD"
+                               )) +
     facet_wrap(~Method) 
     # Separate plots by Method, if not the same y-axis, add: , scales = "free_y"
     
@@ -354,11 +366,18 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         legend.text = element_text(size = 24), 
         legend.title = element_text(size = 24),
         plot.title = element_text(size = 24, face = "bold"),
-        axis.title.x = element_text(size = 24),
-        axis.title.y = element_text(size = 24),
+        #axis.title.x = element_text(size = 24),
+        #axis.title.y = element_text(size = 24),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
         strip.text = element_text(size = 24),
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
+  scale_fill_manual(values = c("Relaimpo" = "#B6D7F7",
+                               "BVI" = "#C6CDF7",
+                               "ELMG" = "#C6F7CD",
+                               "ERW" = "#E6C6DF"
+                               )) +
   facet_wrap(~Method) +  # Separate plots by Method 
   geom_segment(data = variance_explained, 
                aes(x = Cov_Num - segment_width/2, xend = Cov_Num + segment_width/2,
@@ -380,11 +399,18 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         legend.text = element_text(size = 24), 
         legend.title = element_text(size = 24),
         plot.title = element_text(size = 24, face = "bold"),
-        axis.title.x = element_text(size = 24),
-        axis.title.y = element_text(size = 24),
+        #axis.title.x = element_text(size = 24),
+        #axis.title.y = element_text(size = 24),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
         strip.text = element_text(size = 24),
         axis.text.x = element_text(size = 20),
         axis.text.y = element_text(size = 20)) +
+  scale_fill_manual(values = c("Relaimpo" = "#B6D7F7",
+                               "BVI" = "#C6CDF7",
+                               "ELMG" = "#C6F7CD",
+                               "ERW" = "#E6C6DF"
+                               )) +
   facet_wrap(~Method) +  # Separate plots by Method 
   geom_segment(data = variance_explained, 
                aes(x = Cov_Num - segment_width/2, xend = Cov_Num + segment_width/2,
@@ -458,7 +484,7 @@ for (cov_level in names(all_summary_tables$Variance_gamma)) {
 
 ```{r, eval=FALSE}
 # Define the folder where you want to save the plots
-output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_9/Prosjekt/Latex/Thesis template NTNU/Figures/ViolinPlots"
+output_folder_plots <- "/Users/augustarnstad/Library/CloudStorage/OneDrive-NTNU/Semester_10/Master/Latex/Figures/ViolinPlots"
 
 # Create the folder if it doesn't exist
 if (!dir.exists(output_folder_plots)) {
@@ -477,6 +503,7 @@ ggsave(file_name, plot = marginal_variance_plot, width = 8, height = 5, dpi = 30
 
 file_name <- file.path(output_folder_plots, paste("Conditional_Variance.png", sep = ""))
 ggsave(file_name, plot = conditional_variance_plot, width = 8, height = 5, dpi = 300)
+
 ```
 
 
