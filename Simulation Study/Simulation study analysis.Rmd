@@ -226,7 +226,7 @@ for (effect in c("Variance_V1", "Variance_V2", "Variance_V3", "Variance_gamma", 
          y = y_label,
          x = expression('Covariance Level' ~ rho)) +
     theme_minimal() +
-    theme(legend.position = legend_pos, 
+    theme(text = element_text(family="LM Roman 10"), legend.position = legend_pos, 
           legend.text = element_text(size = 24), 
           legend.title = element_text(size = 24),
           plot.title = element_text(size = 24, face = "bold"),
@@ -362,7 +362,7 @@ marginal_variance_plot <- ggplot(data_for_marginal_variance, aes(x = Covariance,
         y = y_label_marginal,
         x = expression('Covariance Level' ~ rho)) +
   theme_minimal() +
-  theme(legend.position = "none", 
+  theme(text = element_text(family="LM Roman 10"), legend.position = "none", 
         legend.text = element_text(size = 24), 
         legend.title = element_text(size = 24),
         plot.title = element_text(size = 24, face = "bold"),
@@ -395,7 +395,7 @@ conditional_variance_plot <- ggplot(data_for_conditional_variance, aes(x = Covar
         y = y_label_conditional,
         x = expression('Covariance Level' ~ rho)) +
   theme_minimal() +
-  theme(legend.position = "none", 
+  theme(text = element_text(family="LM Roman 10"), legend.position = "none", 
         legend.text = element_text(size = 24), 
         legend.title = element_text(size = 24),
         plot.title = element_text(size = 24, face = "bold"),
